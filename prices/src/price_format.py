@@ -6,6 +6,13 @@ import os
 from datetime import datetime
 import re
 
+DATA_FIELDS = { 'label': 0,
+                'price': 1,
+                'time': 2,
+                'type': 3,
+                'os': 4,
+                'region': 5}
+
 def main():
     path = 'data/'
     for root, subdirs, files in os.walk(path):
@@ -33,9 +40,16 @@ def main():
 
 def process_txt(filepath):
     f = open(filepath, 'r')
-    for line in f.readlines():
-        output = line.split('\t')
-        print(output)
+    for line in f.readlines()[1:]:
+        output = line.replace('\n', '').split('\t')
+        if len(output) == len(DATA_FIELDS):
+        # print(output[DATA_FIELDS['time']])
+            # print(output)
+            output[DATA_FIELDS['time']] = calculate_epoch(output[DATA_FIELDS['time']])
+            # date = datetime.strptime(output[DATA_FIELDS['time']], '%Y-%m-%dT%H:%M:%S+0100')
+            # output[DATA_FIELDS['time']] = (date - datetime(1970,1,1)).total_seconds()
+            print(output)
+            # print(date)
 
 
     f.close()
@@ -55,7 +69,9 @@ def process_xz(filepath):
     print("xz")
 
 
-
+def calculate_epoch(time):
+    date = datetime.strptime(time, '%Y-%m-%dT%H:%M:%S+0100')
+    return (date - datetime(1970,1,1)).total_seconds()
 
 
 if __name__ == '__main__':
