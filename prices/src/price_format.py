@@ -25,48 +25,49 @@ def main():
                     filepath = os.path.join(root, filename)
                     if filepath.endswith('.gz'):
                         output = process_gz(filepath, outfile)
-                    elif filepath.endswith('.bz2'):
-                        output = process_bz2(filepath, outfile)
-                    elif filepath.endswith('.xz'):
-                        output = process_xz(filepath, outfile)
-                    elif filepath.endswith('.txt'):
-                        output = process_txt(filepath, outfile)
+                    # elif filepath.endswith('.bz2'):
+                    #     output = process_bz2(filepath, outfile)
+                    # elif filepath.endswith('.xz'):
+                    #     output = process_xz(filepath, outfile)
+                    # elif filepath.endswith('.txt'):
+                    #     output = process_txt(filepath, outfile)
                     else:
                         output = None
                         print(filepath)
 
-                    if output:
-                        write_output(output, outfile)
-                    # print('root: {}, subdir: {}, file: {}'.format(root, subdirs, files))
-        # for yeardir in os.listdir(path):
-        #     for filename in os.listdir(filepath):
-        #         filepath += filename
-        #         if filename.endswith("gz"):
-        #             process_gz(filename)
+                    # if output:
+                    #     write_output(output, outfile)
 
 
 
 def process_txt(filepath, outfile):
     with open(filepath, 'r') as f:
-        output = []
-        for line in f.readlines()[1:]:
-            line_data = line.replace('\n', '').split('\t')
-            if len(line_data) == len(DATA_FIELDS):
-            # print(output[DATA_FIELDS['time']])
-                # print(output)
-                line_data[DATA_FIELDS['time']] = calculate_epoch(line_data[DATA_FIELDS['time']])
-                output.append(line_data)
-                # date = datetime.strptime(output[DATA_FIELDS['time']], '%Y-%m-%dT%H:%M:%S+0100')
-                # output[DATA_FIELDS['time']] = (date - datetime(1970,1,1)).total_seconds()
+        content = f.readlines()
 
-                # print(date)
-        f.close()
-        print("txt")
-        return output
+    return process_content(content)
+
+        # for line in f.readlines()[1:]:
+        #     line_data = line.replace('\n', '').split('\t')
+        #     if len(line_data) == len(DATA_FIELDS):
+        #     # print(output[DATA_FIELDS['time']])
+        #         # print(output)
+        #         line_data[DATA_FIELDS['time']] = calculate_epoch(line_data[DATA_FIELDS['time']])
+        #         output.append(line_data)
+        #         # date = datetime.strptime(output[DATA_FIELDS['time']], '%Y-%m-%dT%H:%M:%S+0100')
+        #         # output[DATA_FIELDS['time']] = (date - datetime(1970,1,1)).total_seconds()
+        #
+        #         # print(date)
+        # f.close()
+        # print("txt")
+        # return output
 
 
 def process_gz(filepath, outfile):
-    #TODO: Process gz files
+    with gzip.open(filepath, 'rt', encoding='utf-8') as f:
+        content = f.readlines()
+        print(content)
+
+    return process_content(content)
     print("gz")
 
 def process_bz2(filepath, outfile):
@@ -77,6 +78,16 @@ def process_xz(filepath, outfile):
     #TODO: Process xz files
     print("xz")
 
+
+def process_content(content):
+    output = []
+    for line in content[1:]:
+        line_data = line.replace('\n', '').split('\t')
+        if len(line_data) == len(DATA_FIELDS):
+            line_data[DATA_FIELDS['time']] = calculate_epoch(line_data[DATA_FIELDS['time']])
+            output.append(line_data)
+            print(line_data)
+    return output
 
 def write_output(output, outfile):
     for data_item in sorted(output, key = lambda x: x[DATA_FIELDS['time']]):
