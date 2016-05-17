@@ -9,7 +9,6 @@ import errno
 import datetime
 
 import paramiko
-from scp import SCPClient
 
 LOCATION = 'East US'
 NAME = 'cloudbm'
@@ -28,26 +27,31 @@ FREE_SLOTS = 15
 
 VM_SIZES = {#'Basic_A3': 2,
             # 'Basic_A4': 4,
-            # 'Standard_D1': 1,
-            # 'Standard_D2': 1,
-            # 'Standard_D3': 4,
+            'Standard_D1_v2': 1,
+            # 'Standard_D2_v2': 1,
+            # 'Standard_D3_v2': 4,
             # 'Standard_D4': 8,
-            # 'Standard_D11': 2,
-            # 'Standard_D12': 8,
-            'Standard_D13': 8,
+            # 'Standard_D11_v2': 2,
+            # 'Standard_D12_v2': 8,
+            # 'Standard_D13': 8,
             # 'Standard_D14': 16
             }
 
 VM_ITERATIONS = {
                 # 'Basic_A4': 1,
-                #  'Standard_D3': 1,
+                'Standard_D1_v2': 1,
+                # 'Standard_D2_v2': 5,
+                # 'Standard_D3_v2': 5,
                 #  'Standard_D4': 5,
-                 'Standard_D13': 1,
+                # 'Standard_D11_v2': 5,
+                # 'Standard_D12_v2': 5,
+                #  'Standard_D13': 1,
                 #  'Standard_D14': 5
                  }
 
 subscription_id = '1e40465f-9230-44d1-a955-e69d2f7fe9f8'
-certificate_path = '/Users/Adam/root/stage4/cloud_computing/azure.pem'
+certificate_path = os.path.normpath('/Users/Adam/root/stage4/cloud_computing/azure.pem')
+
 sms = ServiceManagementService(subscription_id, certificate_path)
 
 dict_lock = threading.Lock()
@@ -101,6 +105,16 @@ def output_virtual_machine_images():
         print('Label: ' + image.label)
         print('Category: ' + image.category)
         print('Location: ' + image.location)
+        print('')
+
+def output_role_sizes():
+    result = sms.list_role_sizes()
+
+    for role in result:
+        print('Name: {}'.format(role.name))
+        print('Label: {}'.format(role.label))
+        print('Cores: {}'.format(role.cores))
+        print('Memory: {}'.format(role.memory_in_mb))
         print('')
 
 def capture_vm_image():
@@ -235,11 +249,15 @@ def start_benchmark(hostname, size, mem, iteration):
         if exception.errno != errno.EEXIST:
             print('Error occurred in result writing, no results saved')
             return
-    # readlines blocks until the command has finished executing
-    ssh_stdout.readlines()
-    scp_client = ssh_client.open_sftp()
-    scp_client.get('specjvm2008/results/SPECjvm2008.001/SPECjvm2008.001.txt', path)
-    scp_client.close()
+    # blocks until the command has finished executing
+    status = ssh_stdout.channel.recv_exit_status()
+
+    for line in iter(lambda: stdout.readline(2048), ""):
+        print(line, end="")
+    # ssh_stdout.readlines()
+    sftp_client = ssh_client.open_sftp()
+    sftp_client.get('specjvm2008/results/SPECjvm2008.001/SPECjvm2008.001.txt', path)
+    sftp_client.close()
     ssh_client.close()
 
     # output = ''
@@ -294,7 +312,7 @@ def main():
 # output_operating_systems()
 # output_operating_system_images()
 # output_virtual_machine_images()
-
+# output_role_sizes()
 main()
 
 # create_virtual_machine('cloudbench', 'East US', 'Basic_A1', 1)
