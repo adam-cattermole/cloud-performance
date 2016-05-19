@@ -1,0 +1,13 @@
+#!/bin/bash
+
+scp -i ../spot-key.pem ubuntu@ec2-54-171-117-239.eu-west-1.compute.amazonaws.com:/home/ubuntu/specjvm2008/results/SPECjvm2008.001/SPECjvm2008.001.txt results/c4.2xlarge/result_1.txt
+scp -i ../spot-key.pem ubuntu@ec2-54-194-46-228.eu-west-1.compute.amazonaws.com:/home/ubuntu/specjvm2008/results/SPECjvm2008.001/SPECjvm2008.001.txt results/c4.2xlarge/result_2.txt
+scp -i ../spot-key.pem ubuntu@ec2-54-171-227-73.eu-west-1.compute.amazonaws.com:/home/ubuntu/specjvm2008/results/SPECjvm2008.001/SPECjvm2008.001.txt results/c4.2xlarge/result_3.txt
+scp -i ../spot-key.pem ubuntu@ec2-54-171-115-92.eu-west-1.compute.amazonaws.com:/home/ubuntu/specjvm2008/results/SPECjvm2008.001/SPECjvm2008.001.txt results/c4.2xlarge/result_4.txt
+scp -i ../spot-key.pem ubuntu@ec2-54-171-175-81.eu-west-1.compute.amazonaws.com:/home/ubuntu/specjvm2008/results/SPECjvm2008.001/SPECjvm2008.001.txt results/c4.2xlarge/result_5.txt
+
+scp -i ../spot-key.pem ubuntu@ec2-54-171-117-239.eu-west-1.compute.amazonaws.com:/home/ubuntu/specjvm2008/results/SPECjvm2008.001/SPECjvm2008.001.raw results/c4.2xlarge/result_1.raw
+scp -i ../spot-key.pem ubuntu@ec2-54-194-46-228.eu-west-1.compute.amazonaws.com:/home/ubuntu/specjvm2008/results/SPECjvm2008.001/SPECjvm2008.001.raw results/c4.2xlarge/result_2.raw
+scp -i ../spot-key.pem ubuntu@ec2-54-171-227-73.eu-west-1.compute.amazonaws.com:/home/ubuntu/specjvm2008/results/SPECjvm2008.001/SPECjvm2008.001.raw results/c4.2xlarge/result_3.raw
+scp -i ../spot-key.pem ubuntu@ec2-54-171-115-92.eu-west-1.compute.amazonaws.com:/home/ubuntu/specjvm2008/results/SPECjvm2008.001/SPECjvm2008.001.raw results/c4.2xlarge/result_4.raw
+scp -i ../spot-key.pem ubuntu@ec2-54-171-175-81.eu-west-1.compute.amazonaws.com:/home/ubuntu/specjvm2008/results/SPECjvm2008.001/SPECjvm2008.001.raw results/c4.2xlarge/result_5.raw

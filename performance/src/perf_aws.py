@@ -1,6 +1,8 @@
 import boto3
 import paramiko
 
+from VMInteractionThread import VMInteractionThread
+
 import os
 import time
 import threading
@@ -8,31 +10,33 @@ import errno
 import datetime
 
 VM_SIZES = {
-            't2.small': 1,
-            't2.medium': 2,
+            # 't2.micro': 1,
+            # 't2.small': 1,
+            # 't2.medium': 2,
             # 't2.large': 4,
             # 'm4.large': 4,
             # 'm4.xlarge': 8,
             'm4.2xlarge': 16,
             # 'm4.4xlarge': 32,
             # 'c4.large': 2,
-            'c4.xlarge': 4,
+            # 'c4.xlarge': 4,
             'c4.2xlarge': 8,
             # 'c4.4xlarge': 16
             }
 
 VM_ITERATIONS = {
-                't2.small': 1,
-                't2.medium': 3,
+                # 't2.micro': 5,
+                # 't2.small': 1,
+                # 't2.medium': 3,
                 # 't2.large': 4,
                 # 'm4.large': 4,
                 # 'm4.xlarge': 8,
                 'm4.2xlarge': 5,
-                # 'm4.4xlarge': 32,
+                # 'm4.4xlarge': 5,
                 # 'c4.large': 2,
-                'c4.xlarge': 1,
+                # 'c4.xlarge': 1,
                 'c4.2xlarge': 5,
-                # 'c4.4xlarge': 16
+                # 'c4.4xlarge': 5
                 }
 # NUM_ITERATIONS = 5
 
@@ -47,19 +51,19 @@ virtual_machines = {}
 
 
 
-class AWSInteractionThread(threading.Thread):
+class AWSInteractionThread(VMInteractionThread):
 
     def __init__(self, name, size, mem, iteration):
-        threading.Thread.__init__(self)
-        self.name = name
-        self.size = size
-        self.mem = mem
-        self.iteration = iteration
+        VMInteractionThread.__init__(self, name, size, mem, iteration)
+        # self.name = name
+        # self.size = size
+        # self.mem = mem
+        # self.iteration = iteration
         self.instance = None
-        self.complete = False
+        # self.complete = False
 
-    def tPrint(self, string):
-        print('{}: Thread {}: {}'.format(datetime.datetime.time(datetime.datetime.now()),self.name, string))
+    # def tPrint(self, string):
+    #     print('{}: Thread {}: {}'.format(datetime.datetime.time(datetime.datetime.now()),self.name, string))
 
     def run(self):
         self.tPrint('started')
@@ -90,13 +94,18 @@ def create_virtual_machine(size):
                                   SecurityGroups=['launch-wizard-2'])
     return result
 
-def start_benchmark(hostname, username, size, mem, iteration):
+def start_benchmark(hostname, username, size, mem, iteration, single_threaded=False):
+    if single_threaded:
+        cmd = 'cd specjvm2008; java -Xmx{}g -jar SPECjvm2008.jar -Dspecjvm.benchmark.threads=1 all'.format(mem)
+    else:
+        cmd = 'cd specjvm2008; java -Xmx{}g -jar SPECjvm2008.jar'.format(mem)
+        # cmd = 'cd specjvm2008; java -jar SPECjvm2008.jar -wt 5s -it 5s -bt 2 compress'
     pkey = paramiko.RSAKey.from_private_key_file('/Users/Adam/root/stage4/cloud_computing/spot-key.pem')
     ssh_client = paramiko.SSHClient()
     ssh_client.set_missing_host_key_policy(paramiko.WarningPolicy())
     ssh_client.connect(hostname=hostname, username=username, pkey=pkey)
-    ssh_stdin, ssh_stdout, ssh_stderr = ssh_client.exec_command('cd specjvm2008; java -Xmx{}g -jar SPECjvm2008.jar'.format(mem))
-    # ssh_stdin, ssh_stdout, ssh_stderr = ssh_client.exec_command('cd specjvm2008; java -jar SPECjvm2008.jar -wt 5s -it 5s -bt 2 compress')
+    ssh_stdin, ssh_stdout, ssh_stderr = ssh_client.exec_command(cmd)
+
     path = 'results/{}/result_{}.txt'.format(size.lower(), iteration)
     try:
         os.makedirs(os.path.dirname(path))
@@ -104,8 +113,10 @@ def start_benchmark(hostname, username, size, mem, iteration):
         if exception.errno != errno.EEXIST:
             print('Error occurred in result writing, no results saved')
             return
-    # readlines blocks until the command has finished executing
-    ssh_stdout.readlines()
+
+    # blocks until the command has finished executing
+    status = ssh_stdout.channel.recv_exit_status()
+    # ssh_stdout.readlines()
     scp_client = ssh_client.open_sftp()
     scp_client.get('specjvm2008/results/SPECjvm2008.001/SPECjvm2008.001.txt', path)
     scp_client.close()

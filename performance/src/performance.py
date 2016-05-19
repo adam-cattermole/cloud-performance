@@ -1,6 +1,7 @@
 from azure import *
 from azure.servicemanagement import *
 
+from VMInteractionThread import VMInteractionThread
 import threading
 import time
 import re
@@ -27,25 +28,37 @@ FREE_SLOTS = 15
 
 VM_SIZES = {#'Basic_A3': 2,
             # 'Basic_A4': 4,
-            'Standard_D1_v2': 1,
+            # 'Standard_D1_v2': 1,
+            # 'Standard_D2': 1,
             # 'Standard_D2_v2': 1,
+            # 'Standard_D3': 4,
             # 'Standard_D3_v2': 4,
+
+            # still need to run
             # 'Standard_D4': 8,
+            'Standard_D4_v2': 8,
+
             # 'Standard_D11_v2': 2,
             # 'Standard_D12_v2': 8,
-            # 'Standard_D13': 8,
+            # 'Standard_D13_v2': 16,
             # 'Standard_D14': 16
             }
 
 VM_ITERATIONS = {
                 # 'Basic_A4': 1,
-                'Standard_D1_v2': 1,
+                # 'Standard_D1_v2': 5,
+                # 'Standard_D2': 5,
                 # 'Standard_D2_v2': 5,
+                # 'Standard_D3': 5,
                 # 'Standard_D3_v2': 5,
-                #  'Standard_D4': 5,
-                # 'Standard_D11_v2': 5,
-                # 'Standard_D12_v2': 5,
-                #  'Standard_D13': 1,
+
+                # still need to run
+                #  'Standard_D4': 3,
+                 'Standard_D4_v2': 5,
+
+                #  'Standard_D11_v2': 1,
+                #  'Standard_D12_v2': 1,
+                #  'Standard_D13_v2': 5,
                 #  'Standard_D14': 5
                  }
 
@@ -140,19 +153,19 @@ def num_hosted_services():
     result = sms.list_hosted_services()
     return len(result)
 
-class VMInteractionThread(threading.Thread):
+class AzureInteractionThread(VMInteractionThread):
     def __init__(self, name, location, size, mem, iteration):
-        threading.Thread.__init__(self)
-        self.name = name
+        VMInteractionThread.__init__(self, name, size, mem, iteration)
+        # self.name = name
         self.location = location
-        self.size = size
-        self.mem = mem
-        self.iteration = iteration
+        # self.size = size
+        # self.mem = mem
+        # self.iteration = iteration
         self.hostname = '{}.cloudapp.net'.format(name)
-        self.complete = False
+        # self.complete = False
 
-    def tPrint(self, string):
-        print('{}: Thread azure.{}: {}'.format(datetime.datetime.time(datetime.datetime.now()),self.name, string))
+    # def tPrint(self, string):
+    #     print('{}: Thread azure.{}: {}'.format(datetime.datetime.time(datetime.datetime.now()),self.name, string))
 
     def run(self):
         self.tPrint('started')
@@ -163,7 +176,7 @@ class VMInteractionThread(threading.Thread):
             time.sleep(LAUNCH_DELAY)
             try:
                 self.tPrint('running benchmark')
-                results = start_benchmark(self.hostname, self.size, self.mem, self.iteration)
+                results = start_benchmark(self.hostname, self.size, self.mem, self.iteration, single_threaded=False)
                 self.tPrint('run complete')
                 self.complete = True
             except Exception as e:
@@ -236,12 +249,17 @@ def create_virtual_machine(name, location, size, iteration):
     except Exception as e:
         print('AZURE ERROR: %s' % str(e))
 
-def start_benchmark(hostname, size, mem, iteration):
+def start_benchmark(hostname, size, mem, iteration, single_threaded=False):
+    if single_threaded:
+        cmd = 'cd specjvm2008; java -Xmx{}g -jar SPECjvm2008.jar -Dspecjvm.benchmark.threads=1 all'.format(mem)
+    else:
+        cmd = 'cd specjvm2008; java -Xmx{}g -jar SPECjvm2008.jar'.format(mem)
+        # cmd = 'cd specjvm2008; java -jar SPECjvm2008.jar -wt 5s -it 5s -bt 2 compress'
     ssh_client = paramiko.SSHClient()
     ssh_client.set_missing_host_key_policy(paramiko.WarningPolicy())
     ssh_client.connect(hostname=hostname, username=USERNAME)
-    ssh_stdin, ssh_stdout, ssh_stderr = ssh_client.exec_command('cd specjvm2008; java -Xmx{}g -jar SPECjvm2008.jar'.format(mem))
-    # ssh_stdin, ssh_stdout, ssh_stderr = ssh_client.exec_command('cd specjvm2008; java -jar SPECjvm2008.jar -wt 5s -it 5s -bt 2 compress')
+    ssh_stdin, ssh_stdout, ssh_stderr = ssh_client.exec_command(cmd)
+
     path = 'results/{}/result_{}.txt'.format(size.lower(), iteration)
     try:
         os.makedirs(os.path.dirname(path))
@@ -252,8 +270,8 @@ def start_benchmark(hostname, size, mem, iteration):
     # blocks until the command has finished executing
     status = ssh_stdout.channel.recv_exit_status()
 
-    for line in iter(lambda: stdout.readline(2048), ""):
-        print(line, end="")
+    # for line in iter(lambda: ssh_stdout.readline(2048), ""):
+    #     print(line, end="")
     # ssh_stdout.readlines()
     sftp_client = ssh_client.open_sftp()
     sftp_client.get('specjvm2008/results/SPECjvm2008.001/SPECjvm2008.001.txt', path)
@@ -300,7 +318,7 @@ def main():
             success = False
             while not success:
                 if len(virtual_machines) < FREE_SLOTS:
-                    virtual_machines[key] = VMInteractionThread('{}-{}'.format(size.lower().replace('_', ''), i+1), LOCATION, size, VM_SIZES[size], i+1)
+                    virtual_machines[key] = AzureInteractionThread('{}-{}'.format(size.lower().replace('_', ''), i+1), LOCATION, size, VM_SIZES[size], i+1)
                     virtual_machines[key].start()
                     success = True
                 else:

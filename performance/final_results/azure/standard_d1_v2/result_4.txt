@@ -1,0 +1,181 @@
+================================
+SPECjvm2008 Base
+================================
+n/a n/a
+Oracle Corporation OpenJDK 64-Bit Server VM
+Tested by: n/a Test date: Tue May 17 16:46:49 UTC 2016
+Run is compliant
+
+================================
+compiler                      82.35                                   
+compress                      49.09                                   
+crypto                        55.88                                   
+derby                         90.63                                   
+mpegaudio                     35.24                                   
+scimark.large                 14.23                                   
+scimark.small                 67.35                                   
+serial                        44.95                                   
+startup                       19.99                                   
+sunflow                       21.03                                   
+xml                           148.34                                  
+Composite result: 45.98 SPECjvm2008 Base ops/m
+================================
+
+
+Submitter                     n/a                                     
+Submitter URL                 n/a                                     
+SPEC license                  n/a                                     
+Tester                        azureuser                               
+Location                      n/a                                     
+Test date:                    Tue May 17 16:46:49 UTC 2016            
+OS name                       Linux                                   
+OS available                  n/a                                     
+OS address bits               n/a                                     
+OS tuning                                                             
+Filesystem                    n/a                                     
+Other s/w name                                                        
+Other s/w tuning                                                      
+Other s/w available                                                   
+Vendor                        Oracle Corporation                      
+Vendor URL                    http://java.oracle.com/                 
+JVM name                      OpenJDK 64-Bit Server VM                
+JVM version                   24.95-b01 mixed mode                    
+JVM available                 n/a                                     
+Java Specification            1.7                                     
+JVM address bits              64                                      
+JVM initial heap memory       n/a                                     
+JVM maximum heap memory       n/a                                     
+JVM command line              n/a                                     
+JVM command line startup                                              
+JVM launcher startup          default                                 
+Additional JVM tuning                                                 
+JVM class path                SPECjvm2008.jar                         
+JVM boot class path           /usr/lib/jvm/java-7-openjdk-amd64/jre/lib/resources.jar:/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/rt.jar:/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/sunrsasign.jar:/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/jsse.jar:/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/jce.jar:/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/charsets.jar:/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/rhino.jar:/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/jfr.jar:/usr/lib/jvm/java-7-openjdk-amd64/jre/classes
+HW vendor                     n/a                                     
+HW vendor's URL               n/a                                     
+HW model                      n/a                                     
+HW available                  n/a                                     
+CPU vendor                    n/a                                     
+CPU vendor's URL              n/a                                     
+CPU name                      n/a                                     
+CPU frequency                 n/a                                     
+# of logical cpus             n/a                                     
+# of chips                    n/a                                     
+# of cores                    n/a                                     
+Cores per chip                n/a                                     
+Threads per core              n/a                                     
+Threading enabled             n/a                                     
+HW address bits               n/a                                     
+Primary cache                 n/a                                     
+Secondary cache               n/a                                     
+Other cache                   n/a                                     
+Memory size                   n/a                                     
+Memory details                n/a                                     
+Other HW details              n/a                                     
+
+Details of Runs
+---------------
+PASSED
+
+Benchmark                     Iteration      Expected(ms)   Actual(ms)     Operations     ops/m          
+---------------------------------------------------------------------------------------------------
+
+compiler.compiler             warmup         120000         120000         230.46         115.23         
+compiler.compiler             iteration 1    240000         240000         534.73         133.68         
+
+compiler.sunflow              warmup         120000         120000         97.27          48.64          
+compiler.sunflow              iteration 1    240000         240000         202.93         50.73          
+
+compress                      warmup         120000         120000         95.92          47.96          
+compress                      iteration 1    240000         240000         196.36         49.09          
+
+crypto.aes                    warmup         120000         120000         39.92          19.96          
+crypto.aes                    iteration 1    240000         240000         79.48          19.87          
+
+crypto.rsa                    warmup         120000         120000         187.68         93.84          
+crypto.rsa                    iteration 1    240000         240000         377.58         94.40          
+
+crypto.signverify             warmup         120000         120000         186.84         93.42          
+crypto.signverify             iteration 1    240000         240000         372.19         93.05          
+
+derby                         warmup         120000         120000         181.31         90.65          
+derby                         iteration 1    240000         240000         362.53         90.63          
+
+mpegaudio                     warmup         120000         120000         68.45          34.23          
+mpegaudio                     iteration 1    240000         240000         140.95         35.24          
+
+scimark.fft.large             warmup         120000         120000         34.46          17.23          
+scimark.fft.large             iteration 1    240000         240000         63.18          15.79          
+
+scimark.lu.large              warmup         120000         120000         9.94           4.97           
+scimark.lu.large              iteration 1    240000         240000         19.56          4.89           
+
+scimark.sor.large             warmup         120000         120000         19.47          9.74           
+scimark.sor.large             iteration 1    240000         240000         38.88          9.72           
+
+scimark.sparse.large          warmup         120000         120000         28.54          14.27          
+scimark.sparse.large          iteration 1    240000         240000         54.64          13.66          
+
+scimark.monte_carlo           warmup         120000         120000         113.52         56.76          
+scimark.monte_carlo           iteration 1    240000         240000         227.95         56.99          
+
+scimark.fft.small             warmup         120000         120000         134.68         67.34          
+scimark.fft.small             iteration 1    240000         240000         257.18         64.29          
+
+scimark.lu.small              warmup         120000         120000         332.08         166.04         
+scimark.lu.small              iteration 1    240000         240000         664.01         166.00         
+
+scimark.sor.small             warmup         120000         120000         82.33          41.16          
+scimark.sor.small             iteration 1    240000         240000         166.36         41.59          
+
+scimark.sparse.small          warmup         120000         120000         107.39         53.70          
+scimark.sparse.small          iteration 1    240000         240000         219.18         54.79          
+
+serial                        warmup         120000         120000         89.06          44.53          
+serial                        iteration 1    240000         240000         179.81         44.95          
+
+startup.helloworld            iteration 1    null           278            1.00           215.83         
+
+startup.compiler.compiler     iteration 1    null           17110          1.00           3.51           
+
+startup.compiler.sunflow      iteration 1    null           12694          1.00           4.73           
+
+startup.compress              iteration 1    null           1881           1.00           31.90          
+
+startup.crypto.aes            iteration 1    null           3955           1.00           15.17          
+
+startup.crypto.rsa            iteration 1    null           1714           1.00           35.01          
+
+startup.crypto.signverify     iteration 1    null           1547           1.00           38.78          
+
+startup.mpegaudio             iteration 1    null           5942           1.00           10.10          
+
+startup.scimark.fft           iteration 1    null           1302           1.00           46.08          
+
+startup.scimark.lu            iteration 1    null           783            1.00           76.63          
+
+startup.scimark.monte_carlo   iteration 1    null           1568           1.00           38.27          
+
+startup.scimark.sor           iteration 1    null           1671           1.00           35.91          
+
+startup.scimark.sparse        iteration 1    null           1317           1.00           45.56          
+
+startup.serial                iteration 1    null           3386           1.00           17.72          
+
+startup.sunflow               iteration 1    null           7964           1.00           7.53           
+
+startup.xml.transform         iteration 1    null           26762          1.00           2.24           
+
+startup.xml.validation        iteration 1    null           7237           1.00           8.29           
+
+sunflow                       warmup         120000         120000         41.13          20.57          
+sunflow                       iteration 1    240000         240000         84.14          21.03          
+
+xml.transform                 warmup         120000         120000         169.35         84.67          
+xml.transform                 iteration 1    240000         240000         364.19         91.05          
+
+xml.validation                warmup         120000         120000         455.81         227.90         
+xml.validation                iteration 1    240000         240000         966.77         241.69         
+
+SPECjvm2008 Version: [SPECjvm2008 1.01 (20090519)]
+Copyright (C) 2008-2016 SPEC. All rights reserved
