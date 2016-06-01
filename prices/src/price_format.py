@@ -61,7 +61,7 @@ class ProcessFileThread(threading.Thread):
 
     def run(self):
         print('\t{}.Start'.format(self.name))
-        if self.filepath.endswith('.txt.gz'):
+        if self.filepath.endswith('.txt.gz') or self.filepath.endswith('.sorted.gz'):
             self.output.append(process_gzip(self.filepath))
         elif self.filepath.endswith('.txt.bz2'):
             self.output.append(process_bz2(self.filepath))
@@ -120,19 +120,25 @@ def process_content(content):
         line_data = line.replace('\n', '').split('\t')
         if len(line_data) == len(DATA_FIELDS):
             line_data[DATA_FIELDS['time']] = calculate_epoch(line_data[DATA_FIELDS['time']])
-            file_data.append(line_data)
+            str_output = '{},{},{},{},{}\n'.format(line_data[DATA_FIELDS['time']],
+                                                 line_data[DATA_FIELDS['price']],
+                                                 line_data[DATA_FIELDS['type']],
+                                                 line_data[DATA_FIELDS['region']],
+                                                 line_data[DATA_FIELDS['platform']])
+            file_data.append(str_output)
             # print(line_data)
     return file_data
 
 def write_output(output, outfile):
     # remove_duplicates()
-    output = list({tuple(y) for x in output for y in x})
-    for data_item in sorted(output, key = lambda x: x[DATA_FIELDS['time']]):
-        outfile.write('{},{},{},{},{}\n'.format(data_item[DATA_FIELDS['time']],
-                                                data_item[DATA_FIELDS['price']],
-                                                data_item[DATA_FIELDS['type']],
-                                                data_item[DATA_FIELDS['region']],
-                                                data_item[DATA_FIELDS['platform']]))
+    output = list({y for x in output for y in x})
+    outfile.writelines(sorted(output))
+    # for data_item in sorted(output, key = lambda x: x[DATA_FIELDS['time']]):
+        # outfile.write('{},{},{},{},{}\n'.format(data_item[DATA_FIELDS['time']],
+                                                # data_item[DATA_FIELDS['price']],
+                                                # data_item[DATA_FIELDS['type']],
+                                                # data_item[DATA_FIELDS['region']],
+                                                # data_item[DATA_FIELDS['platform']]))
 
 def remove_duplicates():
     # output = set()
