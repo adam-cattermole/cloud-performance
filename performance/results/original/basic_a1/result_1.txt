@@ -1,6 +1,0 @@
-compress: 12.23 ops/m
-overall: 12.23 SPECjvm2008 Base ops/m
-serial: 10.99 ops/m
-derby: 25.01 ops/m
-sunflow: 5.39 ops/m
-mpegaudio: 9.41 ops/m
