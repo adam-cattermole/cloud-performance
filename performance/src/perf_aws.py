@@ -55,15 +55,7 @@ class AWSInteractionThread(VMInteractionThread):
 
     def __init__(self, name, size, mem, iteration):
         VMInteractionThread.__init__(self, name, size, mem, iteration)
-        # self.name = name
-        # self.size = size
-        # self.mem = mem
-        # self.iteration = iteration
         self.instance = None
-        # self.complete = False
-
-    # def tPrint(self, string):
-    #     print('{}: Thread {}: {}'.format(datetime.datetime.time(datetime.datetime.now()),self.name, string))
 
     def run(self):
         self.tPrint('started')

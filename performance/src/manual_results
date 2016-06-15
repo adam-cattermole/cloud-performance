@@ -1,13 +1,14 @@
 #!/bin/bash
+#
 
-scp -i ../spot-key.pem ubuntu@ec2-54-171-117-239.eu-west-1.compute.amazonaws.com:/home/ubuntu/specjvm2008/results/SPECjvm2008.001/SPECjvm2008.001.txt results/c4.2xlarge/result_1.txt
-scp -i ../spot-key.pem ubuntu@ec2-54-194-46-228.eu-west-1.compute.amazonaws.com:/home/ubuntu/specjvm2008/results/SPECjvm2008.001/SPECjvm2008.001.txt results/c4.2xlarge/result_2.txt
-scp -i ../spot-key.pem ubuntu@ec2-54-171-227-73.eu-west-1.compute.amazonaws.com:/home/ubuntu/specjvm2008/results/SPECjvm2008.001/SPECjvm2008.001.txt results/c4.2xlarge/result_3.txt
-scp -i ../spot-key.pem ubuntu@ec2-54-171-115-92.eu-west-1.compute.amazonaws.com:/home/ubuntu/specjvm2008/results/SPECjvm2008.001/SPECjvm2008.001.txt results/c4.2xlarge/result_4.txt
-scp -i ../spot-key.pem ubuntu@ec2-54-171-175-81.eu-west-1.compute.amazonaws.com:/home/ubuntu/specjvm2008/results/SPECjvm2008.001/SPECjvm2008.001.txt results/c4.2xlarge/result_5.txt
+scp azureuser@standardd13v2-1.cloudapp.net:/home/azureuser/specjvm2008/results/SPECjvm2008.001/SPECjvm2008.001.raw results/standard_d13_v2/result_1.raw
+scp azureuser@standardd13v2-2.cloudapp.net:/home/azureuser/specjvm2008/results/SPECjvm2008.001/SPECjvm2008.001.raw results/standard_d13_v2/result_2.raw
+scp azureuser@standardd13v2-3.cloudapp.net:/home/azureuser/specjvm2008/results/SPECjvm2008.001/SPECjvm2008.001.raw results/standard_d13_v2/result_3.raw
+scp azureuser@standardd13v2-4.cloudapp.net:/home/azureuser/specjvm2008/results/SPECjvm2008.001/SPECjvm2008.001.raw results/standard_d13_v2/result_4.raw
+scp azureuser@standardd13v2-5.cloudapp.net:/home/azureuser/specjvm2008/results/SPECjvm2008.001/SPECjvm2008.001.raw results/standard_d13_v2/result_5.raw
 
-scp -i ../spot-key.pem ubuntu@ec2-54-171-117-239.eu-west-1.compute.amazonaws.com:/home/ubuntu/specjvm2008/results/SPECjvm2008.001/SPECjvm2008.001.raw results/c4.2xlarge/result_1.raw
-scp -i ../spot-key.pem ubuntu@ec2-54-194-46-228.eu-west-1.compute.amazonaws.com:/home/ubuntu/specjvm2008/results/SPECjvm2008.001/SPECjvm2008.001.raw results/c4.2xlarge/result_2.raw
-scp -i ../spot-key.pem ubuntu@ec2-54-171-227-73.eu-west-1.compute.amazonaws.com:/home/ubuntu/specjvm2008/results/SPECjvm2008.001/SPECjvm2008.001.raw results/c4.2xlarge/result_3.raw
-scp -i ../spot-key.pem ubuntu@ec2-54-171-115-92.eu-west-1.compute.amazonaws.com:/home/ubuntu/specjvm2008/results/SPECjvm2008.001/SPECjvm2008.001.raw results/c4.2xlarge/result_4.raw
-scp -i ../spot-key.pem ubuntu@ec2-54-171-175-81.eu-west-1.compute.amazonaws.com:/home/ubuntu/specjvm2008/results/SPECjvm2008.001/SPECjvm2008.001.raw results/c4.2xlarge/result_5.raw
+scp azureuser@standardd13v2-1.cloudapp.net:/home/azureuser/specjvm2008/results/SPECjvm2008.001/SPECjvm2008.001.txt results/standard_d13_v2/result_1.txt
+scp azureuser@standardd13v2-2.cloudapp.net:/home/azureuser/specjvm2008/results/SPECjvm2008.001/SPECjvm2008.001.txt results/standard_d13_v2/result_2.txt
+scp azureuser@standardd13v2-3.cloudapp.net:/home/azureuser/specjvm2008/results/SPECjvm2008.001/SPECjvm2008.001.txt results/standard_d13_v2/result_3.txt
+scp azureuser@standardd13v2-4.cloudapp.net:/home/azureuser/specjvm2008/results/SPECjvm2008.001/SPECjvm2008.001.txt results/standard_d13_v2/result_4.txt
+scp azureuser@standardd13v2-5.cloudapp.net:/home/azureuser/specjvm2008/results/SPECjvm2008.001/SPECjvm2008.001.txt results/standard_d13_v2/result_5.txt

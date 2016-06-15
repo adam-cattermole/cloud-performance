@@ -11,12 +11,17 @@ import datetime
 
 import paramiko
 
+DEBUG_LEVEL = 0
+
 LOCATION = 'East US'
 NAME = 'cloudbm'
 USERNAME = 'azureuser'
 LAUNCH_DELAY = 180
 RETRY_DELAY = 300
+MULTI_TEST_DELAY = 600
+MULTI_TEST_COUNT = 6
 ITERATION_COUNT = 5
+
 ATTEMPT_LIMIT = 1000
 
 FREE_SLOTS = 15
@@ -28,7 +33,8 @@ FREE_SLOTS = 15
 
 VM_SIZES = {#'Basic_A3': 2,
             # 'Basic_A4': 4,
-            # 'Standard_D1_v2': 1,
+            'Standard_D1': 1,
+            'Standard_D1_v2': 1,
             # 'Standard_D2': 1,
             # 'Standard_D2_v2': 1,
             # 'Standard_D3': 4,
@@ -36,7 +42,7 @@ VM_SIZES = {#'Basic_A3': 2,
 
             # still need to run
             # 'Standard_D4': 8,
-            'Standard_D4_v2': 8,
+            # 'Standard_D4_v2': 8,
 
             # 'Standard_D11_v2': 2,
             # 'Standard_D12_v2': 8,
@@ -46,7 +52,8 @@ VM_SIZES = {#'Basic_A3': 2,
 
 VM_ITERATIONS = {
                 # 'Basic_A4': 1,
-                # 'Standard_D1_v2': 5,
+                'Standard_D1': 5,
+                'Standard_D1_v2': 5,
                 # 'Standard_D2': 5,
                 # 'Standard_D2_v2': 5,
                 # 'Standard_D3': 5,
@@ -54,7 +61,7 @@ VM_ITERATIONS = {
 
                 # still need to run
                 #  'Standard_D4': 3,
-                 'Standard_D4_v2': 5,
+                #  'Standard_D4_v2': 3,
 
                 #  'Standard_D11_v2': 1,
                 #  'Standard_D12_v2': 1,
@@ -62,8 +69,10 @@ VM_ITERATIONS = {
                 #  'Standard_D14': 5
                  }
 
-subscription_id = '1e40465f-9230-44d1-a955-e69d2f7fe9f8'
-certificate_path = os.path.normpath('/Users/Adam/root/stage4/cloud_computing/azure.pem')
+# subscription_id = '1e40465f-9230-44d1-a955-e69d2f7fe9f8'
+
+subscription_id = '15c807f8-f7cd-43fc-af62-9b7d0395ce6b'
+certificate_path = os.path.normpath('../azure.pem')
 
 sms = ServiceManagementService(subscription_id, certificate_path)
 
@@ -132,11 +141,11 @@ def output_role_sizes():
 
 def capture_vm_image():
     # replace the below three parameters with actual values
-    hosted_service_name = 'cloudbenchvm'
-    deployment_name = 'cloudbenchvm'
-    vm_name = 'cloudbenchvm'
+    hosted_service_name = 'benchmarkvm8734'
+    deployment_name = 'benchmarkvm8734'
+    vm_name = 'benchmarkvm'
 
-    image_name = vm_name + 'image'
+    image_name = 'cloudbenchvmimage'
     image = CaptureRoleAsVMImage('Specialized',
         image_name,
         image_name + 'label',
@@ -156,16 +165,8 @@ def num_hosted_services():
 class AzureInteractionThread(VMInteractionThread):
     def __init__(self, name, location, size, mem, iteration):
         VMInteractionThread.__init__(self, name, size, mem, iteration)
-        # self.name = name
         self.location = location
-        # self.size = size
-        # self.mem = mem
-        # self.iteration = iteration
         self.hostname = '{}.cloudapp.net'.format(name)
-        # self.complete = False
-
-    # def tPrint(self, string):
-    #     print('{}: Thread azure.{}: {}'.format(datetime.datetime.time(datetime.datetime.now()),self.name, string))
 
     def run(self):
         self.tPrint('started')
@@ -176,7 +177,7 @@ class AzureInteractionThread(VMInteractionThread):
             time.sleep(LAUNCH_DELAY)
             try:
                 self.tPrint('running benchmark')
-                results = start_benchmark(self.hostname, self.size, self.mem, self.iteration, single_threaded=False)
+                results = start_benchmark(self.hostname, self.size, self.mem, self.iteration, single_threaded=False, multiple_run=False)
                 self.tPrint('run complete')
                 self.complete = True
             except Exception as e:
@@ -195,8 +196,6 @@ class AzureInteractionThread(VMInteractionThread):
 
 
 def create_virtual_machine(name, location, size, iteration):
-    # full_name ='{}{}-{}'.format(name, size.lower().replace('_',''), iteration)
-
     result = sms.list_hosted_services()
     exists = False
     for hosted_service in result:
@@ -211,25 +210,13 @@ def create_virtual_machine(name, location, size, iteration):
             location=location)
 
     # Name of an os image as returned by list_os_images
-    # image_name = 'specvm'
     image_name = 'cloudbenchvmimage'
-    # media_location = 'https://cloudbench.blob.core.windows.net/vhds'
-
-    # Destination storage account container/blob where the VM disk will be created
-    # media_link = 'https://07portalvhdsq3zhkfyqx6x2.blob.core.windows.net/vhds/%s.vhd' % name
-    # os_hd = OSVirtualHardDisk(image_name, media_link)
-
-    # Linux VM configuration, you can use WindowsConfigurationSet
-    # for a Windows VM instead
-    # linux_config = LinuxConfigurationSet(name, 'azureuser', 'y7Z38xJ3', False)
 
     endpoint_config = ConfigurationSet()
     endpoint_config.configuration_set_type = 'NetworkConfiguration'
-    # endpoint1 = azure.servicemanagement.ConfigurationSetInputEndpoint(name='HTTP', protocol='tcp', port='80', local_port='80', load_balanced_endpoint_set_name=None, enable_direct_server_return=False)
-    endpoint2 = ConfigurationSetInputEndpoint(name='SSH', protocol='tcp', port='22', local_port='22', load_balanced_endpoint_set_name=None, enable_direct_server_return=False)
+    endpoint1 = ConfigurationSetInputEndpoint(name='SSH', protocol='tcp', port='22', local_port='22', load_balanced_endpoint_set_name=None, enable_direct_server_return=False)
 
-    # endpoint_config.input_endpoints.input_endpoints.append(endpoint1)
-    endpoint_config.input_endpoints.input_endpoints.append(endpoint2)
+    endpoint_config.input_endpoints.input_endpoints.append(endpoint1)
 
     try:
         result = sms.create_virtual_machine_deployment(service_name=name,
@@ -243,51 +230,85 @@ def create_virtual_machine(name, location, size, iteration):
             role_size=size,
             vm_image_name=image_name)
 
-        # print(result)
-        # print(result.request_id)
-
     except Exception as e:
         print('AZURE ERROR: %s' % str(e))
 
-def start_benchmark(hostname, size, mem, iteration, single_threaded=False):
-    if single_threaded:
-        cmd = 'cd specjvm2008; java -Xmx{}g -jar SPECjvm2008.jar -Dspecjvm.benchmark.threads=1 all'.format(mem)
-    else:
-        cmd = 'cd specjvm2008; java -Xmx{}g -jar SPECjvm2008.jar'.format(mem)
+def start_benchmark(hostname, size, mem, iteration, single_threaded=False, multiple_run=False):
+    # if single_threaded:
+    #     cmd = 'cd specjvm2008; java -Xmx{}g -jar SPECjvm2008.jar -Dspecjvm.benchmark.threads=1 all'.format(mem)
+    # else:
+    #     cmd = 'cd specjvm2008; java -Xmx{}g -jar SPECjvm2008.jar'.format(mem)
         # cmd = 'cd specjvm2008; java -jar SPECjvm2008.jar -wt 5s -it 5s -bt 2 compress'
     ssh_client = paramiko.SSHClient()
     ssh_client.set_missing_host_key_policy(paramiko.WarningPolicy())
     ssh_client.connect(hostname=hostname, username=USERNAME)
+    # ssh_stdin, ssh_stdout, ssh_stderr = ssh_client.exec_command(cmd)
+    if not multiple_run:
+        if single_threaded:
+            cmd = 'cd specjvm2008; java -Xmx{}g -jar SPECjvm2008.jar -Dspecjvm.benchmark.threads=1 all'.format(mem)
+        else:
+            # cmd = 'cd specjvm2008; java -Xmx{}g -jar SPECjvm2008.jar'.format(mem)
+            cmd = 'cd specjvm2008; java -jar SPECjvm2008.jar -wt 5s -it 5s -bt 2 compress'
+        path = 'results/{}/result_{}.txt'.format(size.lower(), iteration)
+        execute_benchmark(ssh_client, cmd, path)
+    else:
+        cmd = 'cd specjvm2008; java -Xmx{}g -jar SPECjvm2008.jar'.format(mem)
+        path = 'results/{}/result_{}'.format(size.lower(), iteration)
+        execute_multiple(ssh_client, cmd, path)
+    # run_benchmark(ssh_client, path, single_threaded, multiple_run)
+
+    # path = 'results/{}/result_{}.txt'.format(size.lower(), iteration)
+    # try:
+    #     os.makedirs(os.path.dirname(path))
+    # except OSError as exception:
+    #     if exception.errno != errno.EEXIST:
+    #         print('Error occurred in result writing, no results saved')
+    #         return
+    #
+    # for line in iter(lambda: ssh_stdout.readline(2048), ""):
+    #     if 'Benchmark:' in line:
+    #         print(line, end="")
+    # # blocks until the command has finished executing
+    # status = ssh_stdout.channel.recv_exit_status()
+
+    # ssh_stdout.readlines()
+    # sftp_client = ssh_client.open_sftp()
+    # sftp_client.get('specjvm2008/results/SPECjvm2008.001/SPECjvm2008.001.txt', path)
+    # sftp_client.close()
+    ssh_client.close()
+
+def execute_multiple(ssh_client, cmd, path):
+    cmd = '{} compress'.format(cmd)
+    for i in range(1, MULTI_TEST_COUNT+1):
+        if i != 1:
+            time.sleep(MULTI_TEST_DELAY)
+        current_path = '{}/{}.txt'.format(path, datetime.datetime.now().strftime('%H-%M-%S'))
+        status = execute_benchmark(ssh_client, cmd, current_path, i)
+
+
+def execute_benchmark(ssh_client, cmd, path, iteration=1):
     ssh_stdin, ssh_stdout, ssh_stderr = ssh_client.exec_command(cmd)
 
-    path = 'results/{}/result_{}.txt'.format(size.lower(), iteration)
+    if DEBUG_LEVEL > 0:
+        for line in iter(lambda: ssh_stdout.readline(2048), ""):
+            if 'Benchmark:' in line:
+                print(line, end="")
+    # blocks until the command has finished executing
+    status = ssh_stdout.channel.recv_exit_status()
+
     try:
         os.makedirs(os.path.dirname(path))
     except OSError as exception:
         if exception.errno != errno.EEXIST:
             print('Error occurred in result writing, no results saved')
             return
-    # blocks until the command has finished executing
-    status = ssh_stdout.channel.recv_exit_status()
 
-    # for line in iter(lambda: ssh_stdout.readline(2048), ""):
-    #     print(line, end="")
-    # ssh_stdout.readlines()
     sftp_client = ssh_client.open_sftp()
-    sftp_client.get('specjvm2008/results/SPECjvm2008.001/SPECjvm2008.001.txt', path)
+    sftp_client.get('specjvm2008/results/SPECjvm2008.{0:0>3}/SPECjvm2008.{0:0>3}.txt'.format(iteration), path)
     sftp_client.close()
-    ssh_client.close()
 
-    # output = ''
-    # for line in ssh_stdout.readlines():
-    #     output += line
-    # score_pattern = re.compile('Score on ([a-z]+): (.+)\n')
-    # overall_pattern = re.compile('composite result: (.+)\n', flags=re.IGNORECASE)
-    # results = dict(score_pattern.findall(output))
-    # overall = overall_pattern.search(output)
-    # if overall:
-    #     results['overall'] = overall.group(1)
-    # return results
+    return status
+
 
 def write_results(size, iteration, results):
     path = 'results/{}/result_{}.txt'.format(size.lower(), iteration)
