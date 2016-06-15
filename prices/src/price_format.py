@@ -16,35 +16,32 @@ DATA_FIELDS = { 'label': 0,
                 'platform': 4,
                 'region': 5}
 
-
 POLL_RATE = 15
-MAX_THREADS = 20
-
-# output = []
+MAX_THREADS = 1000 # (disabled)
 
 thread_pool = {}
 pool_lock = threading.Lock()
 
 def main():
     path = 'data/'
-    out_path = 'out/price_info.txt'
+    out_path = 'out/price_info.csv'
     f_clear = open(out_path, 'w')
     f_clear.close()
-    with open('out/price_info.txt', 'a') as outfile:
+    with open(out_path, 'a') as outfile:
         output = []
         for root, subdirs, files in os.walk(path):
             if len(files) > 0 and 'obsolete'not in root:
                 print(root)
                 for filename in files:
-                    # success = False
-                    # while not success:
-                    #     if len(thread_pool) < MAX_THREADS:
+                    success = False
+                    while not success:
+                        if len(thread_pool) < MAX_THREADS:
                             filepath = os.path.join(root, filename)
                             thread_pool[filename] = ProcessFileThread(filename, filepath, output)
                             thread_pool[filename].start()
                             success = True
-                        # else:
-                        #     time.sleep(POLL_RATE)
+                        else:
+                            time.sleep(POLL_RATE)
                 while len(thread_pool) > 0:
                     time.sleep(POLL_RATE)
                 if output:
@@ -59,8 +56,12 @@ class ProcessFileThread(threading.Thread):
         self.filepath = filepath
         self.output = output
 
+
+    def tPrint(self, string):
+        print('\t{}: {} ({})'.format(datetime.time(datetime.now()), string, self.name))
+
     def run(self):
-        print('\t{}.Start'.format(self.name))
+        self.tPrint('Start')
         if self.filepath.endswith('.txt.gz') or self.filepath.endswith('.sorted.gz'):
             self.output.append(process_gzip(self.filepath))
         elif self.filepath.endswith('.txt.bz2'):
@@ -71,27 +72,10 @@ class ProcessFileThread(threading.Thread):
             self.output.append(process_txt(self.filepath))
         else:
             # output = None
-            print('\tINVALID: {}'.format(self.name))
-        print('\t{}.Complete'.format(self.name))
+            self.tPrint('INVALID')
+        self.tPrint('Complete')
         clear_thread(self.name)
 
-
-
-
-        # for line in f.readlines()[1:]:
-        #     line_data = line.replace('\n', '').split('\t')
-        #     if len(line_data) == len(DATA_FIELDS):
-        #     # print(output[DATA_FIELDS['time']])
-        #         # print(output)
-        #         line_data[DATA_FIELDS['time']] = calculate_epoch(line_data[DATA_FIELDS['time']])
-        #         output.append(line_data)
-        #         # date = datetime.strptime(output[DATA_FIELDS['time']], '%Y-%m-%dT%H:%M:%S+0100')
-        #         # output[DATA_FIELDS['time']] = (date - datetime(1970,1,1)).total_seconds()
-        #
-        #         # print(date)
-        # f.close()
-        # print("txt")
-        # return output
 
 def process_txt(filepath):
     with open(filepath, 'r') as f:
@@ -113,7 +97,6 @@ def process_xz(filepath):
         content = f.readlines()
     return process_content(content)
 
-
 def process_content(content):
     file_data = []
     for line in content[1:]:
@@ -130,24 +113,8 @@ def process_content(content):
     return file_data
 
 def write_output(output, outfile):
-    # remove_duplicates()
     output = list({y for x in output for y in x})
     outfile.writelines(sorted(output))
-    # for data_item in sorted(output, key = lambda x: x[DATA_FIELDS['time']]):
-        # outfile.write('{},{},{},{},{}\n'.format(data_item[DATA_FIELDS['time']],
-                                                # data_item[DATA_FIELDS['price']],
-                                                # data_item[DATA_FIELDS['type']],
-                                                # data_item[DATA_FIELDS['region']],
-                                                # data_item[DATA_FIELDS['platform']]))
-
-def remove_duplicates():
-    # output = set()
-    # for f in data:
-    #     for line in f:
-    #         output.add(tuple(line))
-    output = list({tuple(y) for x in output for y in x})
-    # return list(output)
-
 
 def calculate_epoch(time):
     date = datetime.strptime(time, '%Y-%m-%dT%H:%M:%S%z')
@@ -156,7 +123,6 @@ def calculate_epoch(time):
 def clear_thread(name):
     with pool_lock:
         thread_pool.pop(name)
-
 
 if __name__ == '__main__':
     main()
