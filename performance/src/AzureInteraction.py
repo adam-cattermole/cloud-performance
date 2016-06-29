@@ -8,10 +8,19 @@ import re
 import os
 import errno
 import datetime
+from urllib.parse import urlparse
 
 import paramiko
 
+DEBUG_LEVEL = 0
+
 LOCATION = 'East US'
+
+USERNAME = 'azureuser'
+LAUNCH_DELAY = 180
+RETRY_DELAY = 300
+MULTI_TEST_DELAY = 600
+MULTI_TEST_COUNT = 6
 
 ATTEMPT_LIMIT = 1000
 
@@ -21,23 +30,26 @@ certificate_path = os.path.normpath('../azure.pem')
 sms = ServiceManagementService(subscription_id, certificate_path)
 
 class AzureInteractionThread(VMInteractionThread):
-    
+
     def __init__(self, name, size, mem, iteration):
         VMInteractionThread.__init__(self, name, size, mem, iteration)
-        self.vm_name = name.split('.')[1]
+        self.vm_name = name.split('.')[1].lower().replace('_','')
         self.location = LOCATION
-        self.hostname = '{}.cloudapp.net'.format(name)
+        self.deployment = None
 
     def run(self):
         self.tPrint('started')
         attempt = 0
         while not self.complete and attempt < ATTEMPT_LIMIT:
             create_virtual_machine(self.vm_name, self.location, self.size, self.iteration)
+            self.deployment = sms.get_deployment_by_name(self.vm_name, self.vm_name)
             self.tPrint('vm created - waiting')
-            time.sleep(LAUNCH_DELAY)
+            while self.deployment.status != 'Running':
+                time.sleep(LAUNCH_DELAY)
+                self.deployment = sms.get_deployment_by_name(self.vm_name, self.vm_name)
             try:
                 self.tPrint('running benchmark')
-                results = start_benchmark(self.hostname, self.size, self.mem, self.iteration, single_threaded=False, multiple_run=False)
+                results = start_benchmark(urlparse(self.deployment.url).netloc, self.size, self.mem, self.iteration, single_threaded=False, multiple_run=False)
                 self.tPrint('run complete')
                 self.complete = True
             except Exception as e:
@@ -140,10 +152,10 @@ def execute_benchmark(ssh_client, cmd, path, iteration=1):
 
     sftp_client = ssh_client.open_sftp()
     sftp_client.get('specjvm2008/results/SPECjvm2008.{0:0>3}/SPECjvm2008.{0:0>3}.txt'.format(iteration), path)
+    sftp_client.get('specjvm2008/results/SPECjvm2008.{0:0>3}/SPECjvm2008.{0:0>3}.raw'.format(iteration), path)
     sftp_client.close()
 
     return status
-
 
 def write_results(size, iteration, results):
     path = 'results/{}/result_{}.txt'.format(size.lower(), iteration)

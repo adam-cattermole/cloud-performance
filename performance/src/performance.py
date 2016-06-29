@@ -92,7 +92,21 @@ def output_services():
         print('Service name: ' + hosted_service.service_name)
         print('Management URL: ' + hosted_service.url)
         print('Location: ' + hosted_service.hosted_service_properties.location)
+        props = sms.get_hosted_service_properties(hosted_service.service_name, True)
+        if len(props.deployments) > 0 and len(props.deployments[0].role_list) > 0:
+            if props.deployments[0].role_list[0].role_type == 'PersistentVMRole':
+                print(props.deployments[0].role_list[0].role_name)
+                print(props.deployments[0].role_list[0])
+
         print('')
+
+def output_instance_status(name):
+    result = sms.get_deployment_by_name(name, name)
+    print(result.status)
+    print(result.url)
+    print(result.virtual_network_name)
+    print(result.virtual_ips[0].address)
+
 
 def output_operating_systems():
     result = sms.list_operating_system_families()
@@ -347,12 +361,13 @@ def main():
 
 # output_locations()
 # output_services()
+output_instance_status('cdt-esc')
 # print(num_hosted_services())
 # output_operating_systems()
 # output_operating_system_images()
 # output_virtual_machine_images()
 # output_role_sizes()
-main()
+# main()
 
 # create_virtual_machine('cloudbench', 'East US', 'Basic_A1', 1)
 
