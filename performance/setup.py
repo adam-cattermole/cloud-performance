@@ -6,7 +6,7 @@ setup(name = 'cloud_benchmark',
       url = None,
       author = 'Adam Cattermole',
       author_email = 'a.cattermole@newcastle.ac.uk',
-      packages = ['cloud_benchmark'],
+      packages = ['src'],
       install_requires = [
         'boto3',
         'azure',
