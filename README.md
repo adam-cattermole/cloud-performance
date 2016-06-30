@@ -4,6 +4,6 @@ During the final year of my Computer Science degree, I developed this system / t
 
 There are also scripts which take spot price information, and format it in a way that HTC-Sim can read and create events from.
 
-## [Benchmark](performance/README.md)
+## [Benchmark](performance/)
 
-## [Price Scripts](prices/README.md)
+## [Price Scripts](prices/)

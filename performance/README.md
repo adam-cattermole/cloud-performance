@@ -1,6 +1,6 @@
 # Benchmark
 
-At present the tool, located in [performance](performance/README.md), supports the use of the following platforms:
+At present the tool supports the use of the following platforms:
 
 * Microsoft's Azure
 * Amazon Web Services (AWS) - specifically the EC2 platform
