@@ -116,7 +116,7 @@ def start_benchmark(hostname, size, mem, iteration, single_threaded=False, multi
         else:
             # cmd = 'cd specjvm2008; java -Xmx{}g -jar SPECjvm2008.jar'.format(mem)
             cmd = 'cd specjvm2008; java -jar SPECjvm2008.jar -wt 5s -it 5s -bt 2 compress'
-        path = 'results/{}/result_{}.txt'.format(size.lower(), iteration)
+        path = 'results/{}/result_{}'.format(size.lower(), iteration)
         execute_benchmark(ssh_client, cmd, path)
     else:
         cmd = 'cd specjvm2008; java -Xmx{}g -jar SPECjvm2008.jar'.format(mem)
@@ -151,8 +151,8 @@ def execute_benchmark(ssh_client, cmd, path, iteration=1):
             return
 
     sftp_client = ssh_client.open_sftp()
-    sftp_client.get('specjvm2008/results/SPECjvm2008.{0:0>3}/SPECjvm2008.{0:0>3}.txt'.format(iteration), path)
-    sftp_client.get('specjvm2008/results/SPECjvm2008.{0:0>3}/SPECjvm2008.{0:0>3}.raw'.format(iteration), path)
+    sftp_client.get('specjvm2008/results/SPECjvm2008.{0:0>3}/SPECjvm2008.{0:0>3}.txt'.format(iteration), '{}.txt'.format(path))
+    sftp_client.get('specjvm2008/results/SPECjvm2008.{0:0>3}/SPECjvm2008.{0:0>3}.raw'.format(iteration), '{}.raw'.format(path))
     sftp_client.close()
 
     return status
