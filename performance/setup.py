@@ -9,8 +9,10 @@ setup(name = 'cloud_benchmark',
       packages = ['src'],
       install_requires = [
         'boto3',
+        'awscli',
         'azure',
-        'paramiko'
+        'paramiko',
+        'requests<2.12.*'
       ],
       zip_safe = False
       )
