@@ -1,7 +1,7 @@
 from azure import *
 from azure.servicemanagement import *
 
-from VMInteractionThread import VMInteractionThread
+from util.VMInteractionThread import VMInteractionThread
 
 import time
 import re

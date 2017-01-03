@@ -1,7 +1,7 @@
 import boto3
 import paramiko
 
-from VMInteractionThread import VMInteractionThread
+from util.VMInteractionThread import VMInteractionThread
 
 import os
 import time
@@ -9,6 +9,7 @@ import errno
 import datetime
 
 ec2 = boto3.resource('ec2')
+SPOT_KEY = os.path.normpath("../spot-key.pem")
 
 class AWSInteractionThread(VMInteractionThread):
 
@@ -51,7 +52,7 @@ def start_benchmark(hostname, username, size, mem, iteration, single_threaded=Fa
     else:
         cmd = 'cd specjvm2008; java -Xmx{}g -jar SPECjvm2008.jar'.format(mem)
         # cmd = 'cd specjvm2008; java -jar SPECjvm2008.jar -wt 5s -it 5s -bt 2 compress'
-    pkey = paramiko.RSAKey.from_private_key_file('../spot-key.pem')
+    pkey = paramiko.RSAKey.from_private_key_file(SPOT_KEY)
     ssh_client = paramiko.SSHClient()
     ssh_client.set_missing_host_key_policy(paramiko.WarningPolicy())
     ssh_client.connect(hostname=hostname, username=username, pkey=pkey)

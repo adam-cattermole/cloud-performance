@@ -1,7 +1,8 @@
-
+import configparser
 from AWSInteraction import AWSInteractionThread
 from AzureInteraction import AzureInteractionThread
 
+import os
 import threading
 
 AWS_VM = {
@@ -11,19 +12,19 @@ AWS_VM = {
             # 't2.large': 4,
             # 'm4.large': 4,
             # 'm4.xlarge': 8,
-            'm4.2xlarge': 16,
+            # 'm4.2xlarge': 16,
             # 'm4.4xlarge': 32,
             # 'c4.large': 2,
             # 'c4.xlarge': 4,
-            'c4.2xlarge': 8,
+            # 'c4.2xlarge': 8,
             # 'c4.4xlarge': 16
             }
 
 AZURE_VM = {'Basic_A1': 1,
-            #'Basic_A3': 2,
+            # 'Basic_A3': 2,
             # 'Basic_A4': 4,
-            'Standard_D1': 1,
-            'Standard_D1_v2': 1,
+            # 'Standard_D1': 1,
+            # 'Standard_D1_v2': 1,
             # 'Standard_D2': 1,
             # 'Standard_D2_v2': 1,
             # 'Standard_D3': 4,
@@ -49,10 +50,16 @@ aws_virtual_machines = {}
 azure_virtual_machines = {}
 
 
+CONFIG_FILE = os.path.normpath('config.ini')
+CONFIG_SECTIONS = {'aws':   ['subscription_id', 'path_to_cert'],
+                   'azure': ['path_to_key']}
+
+
 class InitiateThread(threading.Thread):
-    def __init__(self, name):
+    def __init__(self, name, config):
         threading.Thread.__init__(self)
         self.name = name
+        self.config = config
 
     def run(self):
         if self.name == 'aws':
@@ -83,12 +90,27 @@ class InitiateThread(threading.Thread):
 
 def main():
     service_providers = ['aws', 'azure']
+    config = configparser.ConfigParser()
+    config.read("config.ini")
+    print(config.sections())
 
     initiated_threads = {}
     for provider in service_providers:
-        initiated_threads[provider] = InitiateThread(provider)
-        initiated_threads[provider].start()
+        conf_valid = check_config_valid(config, provider)
+        if conf_valid:
+            initiated_threads[provider] = InitiateThread(provider, config[provider])
+            initiated_threads[provider].start()
+        else:
+            print("Invalid Config for provider {}".format(provider))
 
+
+def check_config_valid(config, provider):
+    if config.has_section(provider):
+        for key in config[provider]:
+            if config[provider][key] == '':
+                return False
+        return True
+    return False
 
 if __name__ == '__main__':
     main()
