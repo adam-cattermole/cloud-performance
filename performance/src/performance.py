@@ -1,6 +1,4 @@
 import configparser
-from AWSInteraction import AWSInteractionThread
-from AzureInteraction import AzureInteractionThread
 
 import os
 import threading
@@ -63,12 +61,14 @@ class InitiateThread(threading.Thread):
 
     def run(self):
         if self.name == 'aws':
+            from AWSInteraction import AWSInteractionThread
             virtual_machines = aws_virtual_machines
             vm_types = AWS_VM
             free_slots = AWS_SLOTS
             object_type = AWSInteractionThread
 
         elif self.name == 'azure':
+            from AzureInteraction import AzureInteractionThread
             virtual_machines = azure_virtual_machines
             vm_types = AZURE_VM
             free_slots = AZURE_SLOTS
@@ -92,7 +92,6 @@ def main():
     service_providers = ['aws', 'azure']
     config = configparser.ConfigParser()
     config.read("config.ini")
-    print(config.sections())
 
     initiated_threads = {}
     for provider in service_providers:
