@@ -1,6 +1,7 @@
 import threading
 import datetime
 
+
 class VMInteractionThread(threading.Thread):
 
     def __init__(self, name, size, mem, iteration):
@@ -12,4 +13,6 @@ class VMInteractionThread(threading.Thread):
         self.complete = False
 
     def tPrint(self, string):
-        print('{}: Thread {}: {}'.format(datetime.datetime.time(datetime.datetime.now()),self.name, string))
+        print('{}: Thread {}: {}'.format(
+            datetime.datetime.time(datetime.datetime.now()),
+            self.name, string))

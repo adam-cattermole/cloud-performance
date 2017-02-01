@@ -7,8 +7,15 @@ import os
 import time
 import errno
 import datetime
+import logging
+
+logging.basicConfig(level=logging.INFO,
+                    format='[%(asctime)s.%(msecs)-3d] %(levelname)-8s '
+                    '(%(threadName)-22s) %(message)s',
+                    datefmt='%X')
 
 ec2 = boto3.resource('ec2')
+
 
 class AWSInteractionThread(VMInteractionThread):
 
@@ -17,23 +24,25 @@ class AWSInteractionThread(VMInteractionThread):
         self.instance = None
 
     def run(self):
-        self.tPrint('started')
+        logging.info('started')
         self.instance = create_virtual_machine(self.size)[0]
-        self.tPrint('vm created - waiting')
+        logging.info('vm created - waiting')
         while self.instance.state['Code'] != 16:
             self.instance.load()
             time.sleep(LAUNCH_DELAY)
         try:
-            self.tPrint('running benchmark')
-            start_benchmark(self.instance.public_dns_name, AWS_USERNAME, self.size, self.mem, self.iteration)
-            self.tPrint('run complete')
+            logging.info('running benchmark')
+            start_benchmark(self.instance.public_dns_name, AWS_USERNAME,
+                            self.size, self.mem, self.iteration)
+            logging.info('run complete')
             self.complete = True
         except Exception as e:
-            self.tPrint(str(e))
+            logging.error(str(e))
         finally:
             delete_virtual_machine(self.instance)
-        self.tPrint('finished')
+        logging.info('finished')
         clear_thread(self.size, self.iteration)
+
 
 def create_virtual_machine(size):
     image_id = 'ami-8b68e0f8'
@@ -45,12 +54,19 @@ def create_virtual_machine(size):
                                   SecurityGroups=['launch-wizard-2'])
     return result
 
-def start_benchmark(hostname, username, size, mem, iteration, single_threaded=False):
+
+def start_benchmark(hostname, username, size, mem, iteration=1,
+                    single_threaded=False):
     if single_threaded:
-        cmd = 'cd specjvm2008; java -Xmx{}g -jar SPECjvm2008.jar -Dspecjvm.benchmark.threads=1 all'.format(mem)
+        cmd = ('cd specjvm2008; '
+               'java -Xmx{}g -jar SPECjvm2008.jar '
+               '-Dspecjvm.benchmark.threads=1 all').format(mem)
     else:
-        cmd = 'cd specjvm2008; java -Xmx{}g -jar SPECjvm2008.jar'.format(mem)
-        # cmd = 'cd specjvm2008; java -jar SPECjvm2008.jar -wt 5s -it 5s -bt 2 compress'
+        cmd = ('cd specjvm2008; '
+               'java -Xmx{}g -jar SPECjvm2008.jar').format(mem)
+        # cmd = ('cd specjvm2008; '
+        #    'java -jar SPECjvm2008.jar '
+        #    '-wt 5s -it 5s -bt 2 compress')
     pkey = paramiko.RSAKey.from_private_key_file('../spot-key.pem')
     ssh_client = paramiko.SSHClient()
     ssh_client.set_missing_host_key_policy(paramiko.WarningPolicy())
@@ -62,21 +78,27 @@ def start_benchmark(hostname, username, size, mem, iteration, single_threaded=Fa
         os.makedirs(os.path.dirname(path))
     except OSError as exception:
         if exception.errno != errno.EEXIST:
-            print('Error occurred in result writing, no results saved')
+            logging.error('Error occurred in result writing, no results saved')
             return
 
     # blocks until the command has finished executing
     status = ssh_stdout.channel.recv_exit_status()
     # ssh_stdout.readlines()
     scp_client = ssh_client.open_sftp()
-    scp_client.get('specjvm2008/results/SPECjvm2008.001/SPECjvm2008.001.txt', path)
+    scp_client.get('specjvm2008/results/SPECjvm2008.{0:0>3}/SPECjvm2008'
+                   '.{0:0>3}.txt'.format(iteration), path)
+    scp_client.get('specjvm2008/results/SPECjvm2008.{0:0>3}/SPECjvm2008'
+                   '.{0:0>3}.raw'.format(iteration), path)
+    # TODO: Find out Why this is here twice..
     scp_client.close()
     ssh_client.close()
+
 
 def delete_virtual_machine(instance):
     ids = [instance.id]
     ec2.instances.filter(InstanceIds=ids).stop()
     ec2.instances.filter(InstanceIds=ids).terminate()
+
 
 def clear_thread(size, iteration):
     with dict_lock:

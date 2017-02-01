@@ -11,18 +11,18 @@ AWS_VM = {
             # 't2.large': 4,
             # 'm4.large': 4,
             # 'm4.xlarge': 8,
-            'm4.2xlarge': 16,
+            # 'm4.2xlarge': 16,
             # 'm4.4xlarge': 32,
             # 'c4.large': 2,
             # 'c4.xlarge': 4,
-            'c4.2xlarge': 8,
+            # 'c4.2xlarge': 8,
             # 'c4.4xlarge': 16
             }
 
 AZURE_VM = {'Basic_A1': 1,
-            #'Basic_A3': 2,
+            # 'Basic_A3': 2,
             # 'Basic_A4': 4,
-            'Standard_D1': 1,
+            # 'Standard_D1': 1,
             'Standard_D1_v2': 1,
             # 'Standard_D2': 1,
             # 'Standard_D2_v2': 1,
@@ -40,7 +40,8 @@ AZURE_VM = {'Basic_A1': 1,
             }
 
 
-VM_ITERATIONS = {'Basic_A1': 1}
+VM_ITERATIONS = {'Basic_A1': 2,
+                 'Standard_D1_v2': 1}
 
 AZURE_SLOTS = 15
 AWS_SLOTS = 15
@@ -74,11 +75,18 @@ class InitiateThread(threading.Thread):
                     success = False
                     while not success:
                         if len(virtual_machines) < free_slots:
-                            virtual_machines[key] = object_type('{}thread.{}-{}'.format(self.name, vm_type, i+1), vm_type, vm_types[vm_type], i+1)
+                            virtual_machines[key] = object_type(
+                                '{}.{}-{}'.format(self.name, vm_type, i+1),
+                                vm_type,
+                                vm_types[vm_type],
+                                i+1)
                             virtual_machines[key].start()
                             success = True
                         else:
                             time.sleep(60)
+
+    def purge_complete(self, virtual_machines):
+        print("purge")
 
 
 def main():
