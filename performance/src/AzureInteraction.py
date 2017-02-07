@@ -30,7 +30,9 @@ MULTI_TEST_COUNT = 6
 
 ATTEMPT_LIMIT = 1000
 
-subscription_id = '15c807f8-f7cd-43fc-af62-9b7d0395ce6b'
+subscription_id = os.environ.get(
+        'AZURE_SUBSCRIPTION_ID',
+        '15c807f8-f7cd-43fc-af62-9b7d0395ce6b')
 certificate_path = os.path.normpath('../azure.pem')
 
 sms = ServiceManagementService(subscription_id, certificate_path)
