@@ -1,0 +1,479 @@
+\documentclass[conference]{IEEEtran}
+% \usepackage{array}
+\usepackage{graphicx}
+% \usepackage{float}
+\usepackage{cite}
+\usepackage{hyperref}
+\usepackage{csvsimple}
+\usepackage{adjustbox}
+
+% \usepackage[toc,page]{appendix}
+
+\makeatletter
+\csvset{
+  autotabularcustom/.style={
+    file=#1,
+    after head=\csv@pretable\begin{tabular}{|l|*{\csv@columncount}{r|}}\csv@tablehead,
+    table head=\hline\csvlinetotablerow\\\hline,
+    late after line=\\,
+    table foot=\\\hline,
+    late after last line=\csv@tablefoot\end{tabular}\csv@posttable,
+    command=\csvlinetotablerow},
+}
+\newcommand{\csvautotabularcustom}[2][]{\csvloop{autotabularcustom={#2},#1}}
+\makeatother
+
+% \captionsetup[table]{skip=10pt}
+\graphicspath{{../figures/}}
+\newcommand{\data}{../data}
+
+\begin{document}
+\title{Cloud Performance Benchmarking}
+\author{\IEEEauthorblockN{Adam Cattermole}
+  \IEEEauthorblockA{School of Computing Science\\Newcastle University, UK\\
+  Email: a.cattermole@newcastle.ac.uk}}
+\maketitle
+
+%% ABSTRACT
+%% =========================================================================================================================
+
+\begin{abstract}
+Cloud infrastructure has been supplied for many years as an on-demand service across numerous different providers. The different instance types are provided with hardware specifications, but no concrete performance metrics. Benchmarking virtual machines is one method to contrast and compare between the different services offered across several providers. The on-demand instant nature of cloud infrastructure is offset by the costs incurred. The aim of this project is to create a tool which permits the automated collection of cloud infrastructure performance information, to compare against the cost of these services.
+\end{abstract}
+
+
+%% INTRODUCTION
+%% =========================================================================================================================
+
+\section{Introduction}\label{sec:introduction}
+
+The reliance on cloud computing within the working world has increased dramatically over the last few decades. As technology improves and connection speeds increase, more users have greater demands. Many companies providing various different services require the use of additional computing resources to allow them to continue to provide their offering reliably. Those within various scientific fields also require the use of these systems to permit some large computation to be completed within a reasonable period of time. However, provisioning of the required resources can take several different forms, with associated costs and benefits.
+
+Within the field of Cloud Computing, it is difficult to make predictions to the running of workloads, due to many different factors. The machines that are provisioned for tasks are typically virtualised, giving no indication to the end user of the power of the underlying hardware. Some instances may perform significantly better than others, which can directly impact scheduling decisions to make the best use of available time, which in turn can help to reduce cost.
+
+The motivation for this project is to find out more about how the performance of cloud infrastructure varies from one instance and provider to the next. This provides a more in-depth look into the real performance of a cloud VM, rather than making assumptions based on the listed hardware specifications. With improved estimated execute times of jobs running on the cloud, there should be fewer delays waiting for an instance to become available. Jobs with deadlines to meet can be better scheduled by knowing whether the execution time on a higher performance instance type is worth the increased cost, given the relevant deadline. If a particular job is estimated to complete with sufficient available time remaining on a provisioned instance, better estimates could permit another job to be allocated to make the most of this remaining time.
+
+To fullfil this aim, a tool is created which can be used to autonomously collect computational performance results from cloud instances across different providers. By handling the entire testing process, from provisioning new cloud instances to extracting results without leaving resources running, the tool is designed with ease of use in mind. The initial implementation stresses the computational power of cloud infrastructure, focussing on CPU and memory performance, however the intent is for the tool to act as a harness for any benchmark suite. Whilst others have created similar systems, some are more focussed on data driven applications, and fewer are available for public use. For this reason, I present this tool as an open-source alternative, where it is available in its entirety for others to use. Through use of this system performance information has been gathered for many different instance types across, the platforms of both Microsoft Azure and Amazon EC2, permitting an analysis of the results.
+
+The performance information collected shows a large distinction between the different VM series from cloud providers. Some of the results display a large variance in performance from one instance to the next, whereas others perform very similarly from one run to the other. The different instance series have largely different performance, whilst the cost is not always representative, for example the multi-core instance types within the basic A-series offered by Azure in general perform worse than the other series whilst also costing more per hour.
+
+
+\section{Cloud Benchmarking}\label{sec:bench}
+
+Benchmarking in relation to the field of computing, is the notion of running an application to evaluate the performance of a particular system, or component within a system. This is done by running a set of different tests, that are aimed to stress the limits of the object in question. Benchmarks are commonly used on personal computers as a method to measure performance of a processor, graphics card, or disk read and write speeds. This allows the user to objectively compare the performance of the components they own in relation to measurements recorded with different hardware or systems. An example of one test suite commonly used for measuring the performance of a hard drive is CrystalDiskMark \cite{crystaldiskmark}. The benchmark runs multiple different tests of reading and writing files to the disk, one of which tests the pure sequential transfer rates, whereas another performs many smaller copies which puts more work onto the processor.
+
+When benchmarking cloud services, there are some factors that may have a higher impact on the performance than others. Some cloud applications may rely more heavily on real-time network operations, and so the total bandwidth available or network latency would be of utmost importance. More and more applications are interacting with vast quantities of data, increasing the demand for high performance data storage solutions. Cooper \textit{et al}\cite{cooper2010benchmarking} developed an evaluation tool, named \textit{`Yahoo! Cloud Service Benchmark (YCSB)'}, that could be used to measure the performance of such data serving cloud systems. YCSB makes use of multiple different workloads, each testing various different aspects of the system, such as read/write operations, different data sizes, request distribution etc. This provides an insight into how the service would perform under many different conditions. The focus of this research is towards the performance of data serving systems important to many applications, however the results collected from this tool would likely have little relation to the performance of High-Throughput or High-Performance systems.
+
+It is often difficult to compare cloud infrastructure offerings due to the many different factors involved in how the resources are provided. Different hardware, virtualization techniques and server configuration is in place from one provider to the next\cite{chhetri2013smart}. Some research has taken place that permits a better comparison of computational performance from different cloud providers. Li \textit{et al}\cite{li2010cloudcmp} have investigated this performance in relation to cost, alongside the network and persistent storage performance of four separate cloud offerings. To measure the CPU performance, a set of Java based benchmark tasks from SPECjvm2008 were run. The results showed that some instance types within the same price bracket could have double the performance of one another, with non-equivalent cost differences. There was also confirmation that the higher tier instances completed benchmarks within faster time frames than the lower tier, even in single threaded runs. This indicates that the CPU's running within the high tier instances may not only have more cores, but may be running with a higher clock speed.
+
+Chhetri \textit{et al}\cite{chhetri2013smart} developed a framework called \textit{`Smart CloudBench'}, which allows the user to perform real-time benchmarking of cloud infrastructure. The framework produces results by deploying an application stack onto the cloud infrastructure, and measuring the performance and resource utilization of identical workloads. This is marketed as providing a better evaluation of cloud infrastructure than running simple computational benchmarks, as it better reflects real-world application scenarios. Whilst this sounds like a promising tool to benchmark several different cloud providers before deploying an application, the tool does not appear to have been provided for public use.
+
+\subsection{SPEC JVM}
+
+SPECjvm2008 is a tool used to benchmark the performance of a Java Runtime Environment (JRE). The benchmark simulates some real life applications which typically have costly workloads, such as cryptographic and scientific functions. Results obtained through the use of SPECjvm2008 are representative of the underlying hardware systems. Importantly, the benchmark makes use of and stresses a modern multi-core processor. The different experiments provide evaluation of the performance of many system aspects, such as the number of cores and processors, the frequency of these processors, integer and floating point operations, cache hierarchy and memory sub systems \cite{shiv2009specjvm2008}. However, there is limited testing of disk read/writes and no network testing whatsoever \cite{specjvm}. SPECjvm2008 may not be the most proficient in fully stressing the hardware within a system, however it has vast interoperability, as the requirement is based upon a JRE being present on the system. By default, each test in the suite initially runs as a warmup for 2:00 minutes, followed by 4:00 minutes for the test measurement.
+
+%% IMPLEMENTATION
+%% =========================================================================================================================
+
+\section{Implementation}\label{sec:implementation}
+
+There are several different criteria which are involved in the collection of performance results from a cloud VM. The general flow of the application is listed below, but the idea is relatively straightforward. First, we must acquire a new VM to perform our benchmark on, to ensure that we are running with a clean state. The test suite can then be run on the instance, and the results collected. For the initial implementation, SPECjvm2008 was selected as the benchmarking suite, however it is intended for future iterations to facilitate a selection of testing suites. Finally the cloud service must be removed entirely post extraction of result data, to prevent additional cost incursion from leaving any remaining components.
+
+\begin{enumerate}
+  \item Provision a virtual machine
+  \item Run the performance benchmark
+  \item Collect the results
+  \item De-provision (release) the virtual machine
+\end{enumerate}
+
+Microsoft's Azure platform was selected as the first candidate to collect results from. The provisioning of instances initially is relatively straightforward. This is done by several API calls to the Azure SDK. First, a hosted service must be created in the correct region, which then permits the creation of a new VM as the deployment for this service, whereby you are required to specify the name, image to be used, instance type, and other configuration options. Seeing as SPECjvm2008 was chosen as the benchmark suite to be used, it must first be installed along with a Java Runtime Environment (JRE) on our newly provisioned VM. There were multiple options for the installation, the first of which would be to download and install these components upon provisioning each virtual machine. However, this creates additional overhead for the initialisation of each instance, and so a custom `specialized' VM image \cite{azurevmimage} was created for use where the required components were pre-installed. For ease-of-use purposes, this image was based off of the standard Ubuntu 14.04 image provided by Azure at the time of writing.
+
+To run SPECjvm2008, a command must be run from within the installation folder. The python paramiko package was used to connect to the VM over an Secure Shell (SSH) connection, where the benchmark could then be executed from within the VM. To connect over SSH however, the VM must be setup correctly to accept an SSH key, and the VM must be accessible from the default SSH port (22). To ensure the benchmark runs until completion, a blocking call is made on the output stream from the execution, waiting for the command to exit or the channel to be closed. Once this returns the benchmark has completed, and the results file is copied across to the original machine using an SFTP session. The final step is to release the virtual machine, by deleting the hosted service and deployments, along with associated data disks.
+
+The process was very similar for Amazon's EC2 platform, however using the boto3 package instead to interact with the EC2 API. It was noticable that this package required far fewer lines of code to complete simple tasks, such as creating a particular tier of VM from a predefined image in one function call. It should be noted however that both platforms and their associated packages have some setup that must be completed prior to accessing the services programmatically. This includes creating a service management certificate for Azure, and either creating files or running the configure command from AWS CLI for EC2.
+
+% Sequential design figure
+% =====================
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\linewidth]{impl_design.png}
+  \caption{The flow of the result collection process}
+  \label{fig:impldesign}
+\end{figure}
+% =====================
+
+The initial implementation would iterate through the different instance sizes, performing these operations in a serial fashion. The benchmark itself has a running time of approximately 2.25 hours, dependant on the speed of startup test completion. With multiple repetitions for each instance type, the time taken to complete the benchmarks sequentially is great. The final solution makes use of multithreading to overcome this issue. Each thread manages the entire process of running the benchmark and collecting results on a single instance, and are stored in a pool. Azure has a limit on the number of hosted services by default, permitting only 20 at a time. New threads can only be instantiated if this limit will not be breached, and they handle their own removal from the pool, post deallocation of the associated VM instance. Results were also collected from Amazon Elastic Compute Cloud (EC2) by using a similar method, but with a higher default unique instance limit of 30. If an instance failed to provision, there would be a failure when attempting to run the benchmark. This error was handled, any resources that were created are removed, and the thread waits 5 minutes before attempting to allocate again. Once the retry count exceeds the preset maximum, any associated resources are deleted and the thread is terminated.
+
+% Thread pool figure
+% =====================
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\linewidth]{thread_pool.png}
+  \caption{Multithreaded implementation}
+  \label{fig:threadeddesign}
+\end{figure}
+% =====================
+
+%% EVALUATION
+%% =========================================================================================================================
+
+\section{Evaluation}
+
+\subsection{Performance}\label{sec:eval:performance}
+
+The performance results were provisioned by methods explained within section~\ref{sec:implementation}. Each VM instance type was tested over 5 different iterations, whereby a new VM was provisioned for each run. This would hopefully give some sort of inclination as to the variability in performance between separate instances. Microsoft's Azure platform and Amazon EC2 were both chosen to provide some comparison between different cloud providers. The different instance types were chosen to cover a wide range of the offerings which may influence the scores received from the benchmark run. In general, this included several general purpose instance types, alongside compute-optimised VM's at a variety of pricing tiers.
+
+\subsubsection{Azure Results}\label{sec:eval:azureresults}
+
+The first set of results collected are detailed in the Azure table (Table \ref{tab:azure}). When looking at the A-series, Basic general purpose tier instances, the overall score increases as we move from the lowest to highest tier, as expected. The cost of these instance types goes up by the same factor as the hardware specifications (virtual cores and memory). However, the increase in composite result differs from one to the next. If the benchmark is highly parallel, according to Amdahl's law, the speedup from adding additional cores should result in a near linear speedup, falling off with diminishing returns as the number of cores increases.
+
+The Basic\_A2 tier instance score increases by more than a factor of 2 from the Basic\_A1, when the number of cores, memory and price also double. This is unusual, as it shows that doubling the number of threads resulted in an increase in performance by slightly more than double. Although the memory on the instance increases also, the amount of memory provided to the JRE under test remained at 1GB for both. This may be an erroneous result, and the instances that were provisioned for Basic\_A2 may have simply been slightly faster than those for Basic\_A1, however without running more iterations it would not be possible to substantiate this claim.
+
+When moving towards the A3 and A4 variants there is less of an increase in performance for the increase in cost and number of cores. The composite result for the A4 performs at only 84\% of the effective rate, if increasing the number of cores increased performance by the same factor. However, the `startup' series of tests within the SPECjvm2008 benchmark always run on a single thread only \cite{specjvmguide}, and so increasing the clock speed of a processor would have a greater effect on this test than increasing the cores. If this test is excluded from the composite score so that the comparison is made directly from tests affected by the number of threads, a value of 97\% is achieved when compared to the A1 for per core performance. This is much closer to an expected value of speedup.
+
+% % Azure Performance Table
+% % =====================
+
+% \csvreader[tabular=|l|r|r|r|r|r|r|r|r|r|r|r|,
+% table head=\hline & Basic\_A1 & Basic\_A2 & Basic\_A3 & Basic\_A4 & Standard\_D1 & Standard\_D2 & Standard\_D3 & Standard\_D4 & Standard\_D11 & Standard\_D12 & Standard\_D13\\\hline,
+% late after line=\\\hline,
+% respect all,
+% head to column names]%
+\begin{table*}[!h]
+  % \centering
+  \caption{Performance result averages for Azure across 5 iterations per instance type}
+  \label{tab:azure}
+  \begin{adjustbox}{width=\linewidth,center}
+    \csvautotabularcustom[respect all]{\data/azure_averages.csv}
+% \begin{tabular}{|l|r|r|r|r|r|r|r|r|r|r|r|}
+%   \hline
+%   \multicolumn{12}{|c|}{Azure: Average Results} \\
+% \hline
+%  & Basic\_A1 & Basic\_A2 & Basic\_A3 & Basic\_A4 & Standard\_D1 & Standard\_D2 & Standard\_D3 & Standard\_D4 & Standard\_D11 & Standard\_D12 & Standard\_D13 \\
+% \hline
+% cores         & 1.00      & 2.00      & 4.00      & 8.00      & 1.00         & 2.00         & 4.00         & 8.00         & 2.00          & 4.00          & 8.00          \\
+% memory (GB)   & 1.75      & 3.50      & 7.00      & 14.00     & 3.50         & 7.00         & 14.00        & 28.00        & 14.00         & 28.00         & 56.00         \\
+% \hline
+% compiler      & 21.31     & 63.94     & 124.56    & 221.47    & 57.87        & 155.67       & 306.36       & 549.86       & 155.80        & 311.39        & 546.31        \\
+% compress      & 13.04     & 28.92     & 58.81     & 120.44    & 34.34        & 68.32        & 135.30       & 271.01       & 66.46         & 136.41        & 257.19        \\
+% crypto        & 15.14     & 31.54     & 64.79     & 129.10    & 76.45        & 77.09        & 150.47       & 290.43       & 76.45         & 152.10        & 300.84        \\
+% derby         & 25.91     & 50.68     & 89.29     & 160.09    & 112.30       & 116.67       & 170.25       & 414.07       & 112.30        & 206.59        & 348.70        \\
+% mpegaudio     & 9.90      & 20.54     & 40.65     & 80.66     & 48.60        & 50.42        & 97.57        & 188.92       & 48.60         & 97.93         & 195.95        \\
+% scimark.large & 5.78      & 10.48     & 17.63     & 30.99     & 15.93        & 27.99        & 45.50        & 71.54        & 98.53         & 198.56        & 381.48        \\
+% scimark.small & 18.17     & 39.07     & 76.65     & 157.95    & 48.00        & 97.38        & 199.49       & 397.99       & 28.23         & 46.41         & 68.33         \\
+% serial        & 11.50     & 24.50     & 47.19     & 87.67     & 29.45        & 58.66        & 109.30       & 209.18       & 56.71         & 112.14        & 207.22        \\
+% startup       & 5.47      & 7.44      & 8.13      & 8.04      & 14.11        & 18.05        & 19.53        & 19.12        & 17.05         & 19.55         & 19.81         \\
+% sunflow       & 5.63      & 11.51     & 22.55     & 43.63     & 14.61        & 28.09        & 57.11        & 112.64       & 28.02         & 56.97         & 115.25        \\
+% xml           & 37.68     & 78.68     & 153.26    & 279.23    & 95.51        & 186.13       & 353.39       & 679.45       & 180.59        & 356.60        & 703.06        \\
+% \hline
+% geometric mean       & 12.80     & 26.24     & 47.89     & 85.66     & 33.08        & 63.89        & 112.94       & 206.53       & 62.64         & 116.38        & 202.97        \\
+% w/o startup   & 13.93     & 29.76     & 57.18     & 108.57    & 36.03        & 72.50        & 134.62       & 262.03       & 71.36         & 139.11        & 256.15        \\
+% variance  &  0.44 &	0.39  &	1.80  &	11.59 &	1.94  &	10.86 &	28.01 &	26.96 &	9.40  &	19.98 &	151.76 \\
+% standard deviation & 0.59  &	0.63  & 1.34  &	3.40  &	1.39  &	3.30  &	5.29  &	5.19   & 3.07 &	4.47  &	12.32 \\
+% \hline
+% cost/hour     & \$0.044   & \$0.088   & \$0.176   & \$0.352   & \$0.077      & \$0.154      & \$0.308      & \$0.616      & \$0.195       & \$0.390       & \$0.780       \\
+% \hline
+% \end{tabular}
+  \end{adjustbox}
+\end{table*}
+%
+% % =====================
+
+The D-series virtual machines are Azure's optimised compute variants \cite{azurevmtype}. These have faster processors over the A-series variants, which should result in higher performance while keeping the number of cores the same. The results show that this is the case, with every one of the D-series scoring nearly three times the amount of the equivalent basic tier model. The performance increase is in fact so great that the 4-core Standard\_D3 outperforms that of the 8-core Basic\_A4 by 32\% whilst also costing \$0.044/hour less for each VM. The same can be said for the 2-core Standard\_D2 when compared against the Basic\_A3 with a performance increase of 33\% and cost reduction of cost by \$0.022/hour per VM.
+
+Performance results were also collected for the high memory variants of the D-series, Standard\_D11-13 where the JRE was created with more memory for testing. Whilst extra memory did not appear to have any effect on the performance results produced, the Standard\_D13 series showed a large amount of variability between different iterations when compared to its counterpart, the D4 (appendices: figure \ref{fig:azurevariability}). This may be somewhat a result of the time at which each iteration took place, as there was some difficulty in successfully provisioning D13 instances. The lack of performance benefit is likely due to the JRE being provided with significantly more memory than required, without the additional memory from these types of VM's - ``For all the JREs we have tested, 400 MB is sufficient for a system with 2 hardware threads''\cite{specjvmguide}.
+
+% % Azure compute optimised variant Performance Table
+% % =====================
+\begin{table*}[!h]
+%   % \centering
+  \caption{Performance result averages for Azure Dv2-series across 5 iterations per instance type}
+  \label{tab:azuredv2}
+  \begin{adjustbox}{width=\linewidth,center}
+    \csvautotabularcustom[respect all]{\data/azure_dv2_averages.csv}
+%   \begin{tabular}{|l|r|r|r|r|r|r|r|}
+%     \hline
+%     \multicolumn{8}{|c|}{Azure: Average Dv2-series Results} \\
+%     \hline
+% & Standard\_D1\_v2 & Standard\_D2\_v2 & Standard\_D3\_v2 & Standard\_D4\_v2 & Standard\_D11\_v2 & Standard\_D12\_v2 & Standard\_D13\_v2 \\
+%     \hline
+%     cores         & 1.00             & 2.00             & 4.00             & 8.00             & 2.00              & 4.00              & 8.00              \\
+%     memory (GB)   & 3.50             & 7.00             & 14.00            & 28.00            & 14.00             & 28.00             & 56.00             \\
+%     \hline
+%     compiler      & 82.59            & 230.55           & 446.80           & 846.63           & 233.13            & 444.79            & 575.80            \\
+%     compress      & 49.06            & 98.84            & 183.52           & 370.90           & 96.07             & 183.70            & 367.98            \\
+%     crypto        & 55.91            & 113.81           & 216.06           & 422.39           & 112.59            & 215.07            & 412.32            \\
+%     derby         & 85.43            & 160.84           & 242.91           & 615.61           & 167.98            & 281.57            & 588.54            \\
+%     mpegaudio     & 36.51            & 72.52            & 135.68           & 267.04           & 70.65             & 136.92            & 266.92            \\
+%     scimark.large & 19.84            & 32.95            & 47.22            & 64.25            & 35.96             & 50.54             & 62.29             \\
+%     scimark.small & 69.47            & 139.14           & 268.74           & 522.43           & 138.40            & 267.60            & 509.81            \\
+%     serial        & 45.94            & 90.96            & 164.49           & 317.23           & 86.64             & 164.73            & 311.86            \\
+%     startup       & 19.84            & 25.26            & 27.90            & 27.72            & 25.30             & 27.94             & 27.92             \\
+%     sunflow       & 21.83            & 41.50            & 77.89            & 157.77           & 39.61             & 78.24             & 156.94            \\
+%     xml           & 151.07           & 284.28           & 535.10           & 1048.73          & 278.92            & 532.88            & 1054.62           \\
+%     \hline
+%     geometric mean     & 47.59            & 91.45            & 156.33           & 286.37           & 91.14             & 159.94            & 272.91            \\
+%     w/o startup   & 51.95            & 104.01           & 185.74           & 361.73           & 103.60            & 190.44            & 342.80            \\
+%     variance                & 3.42  &	14.17 &	21.68 &	2.52  &	5.28  &	6.20  &	24.87 \\
+%     standard deviation      & 1.85  &	3.76  &	4.66  &	1.59  &	2.30  &	2.49  &	4.99 \\
+%     speedup over D-series  & 43.86\% & 43.14\% &	38.41\% &	38.66\% &	45.50\% &	37.43\% &	34.46\% \\
+%     \hline
+%     cost/hour     & \$0.073          & \$0.146          & \$0.293          & \$0.585          & \$0.185           & \$0.371           & \$0.741           \\
+%     \hline
+% \end{tabular}
+  \end{adjustbox}
+\end{table*}
+% % =====================
+
+Azure also offer a newer variant of the D-series with more powerful CPUs, named the Dv2-series, which are claimed to be 35\% faster than the original D-series \cite{azurevmtype}. The benchmark results show greatly increased performance on the Basic general purpose models, and an approximately 43\% increase in performance over the D-series across the different tiers for the SPECjvm2008 benchmark. A single core Standard\_D1\_v2 model outperforms the equivalent single core Basic\_A1 by nearly 4 times, whilst costing less than double the amount per hour. In fact, this single core Dv2 model has very similar performance to the results from the Basic\_A3 4-core machine, while costing less than half the amount per hour. This continues for the other Dv2 tiers, with the 2-core variant scoring only slightly less than the Basic\_A4 8-core VM whilst also costing substantially less.
+
+When comparing the performance of the D-series with the Dv2-series, the cost is very important. Although the specifications of both of these series are identical for each tier, but with upgraded CPUs in the v2 series, the cost/hour of all Dv2-series are less than the equivalent D-series. This makes the increase in performance from the Dv2-series even more beneficial to a user, as there are no additional costs to taking advantage of this speed.
+
+
+% % Graph comparison of Azure types
+% % =====================
+% \begin{figure}[ht]
+%   \centering
+%   \includegraphics[width=\linewidth]{azurechart.png}
+%   \caption{Comparison of Azure tier performance}
+%   \label{fig:azurechart}
+% \end{figure}
+% % =====================
+
+% Azure variability
+% =====================
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\linewidth]{azure_variability.png}
+  \caption{Azure average performance results with variance}
+  \label{fig:azurevariability}
+\end{figure}
+% =====================
+
+\subsubsection{Amazon Elastic Compute Cloud Results}\label{sec:eval:awsresults}
+
+The second set of data (Table \ref{tab:ec2}) is collected from Amazon's EC2, running the benchmark on several T2 general purpose instances, newer generation general purpose M4 instances, alongside some compute optimised C4 machines \cite{awsvmtype}. When looking at the results from T2 instances, an increase in performance can be seen from one tier to the next, which is generally expected when the hardware specification of the VMs increases also. However, from a t2.micro to a t2.small, the number of cores remains the same while the memory increases. Although this is the case, the JRE was provided with the same amount of memory for both of these benchmark runs, and so the capacity increase should not have affected the results for the runs.
+
+The same approximately 50\% increase in performance occurs between the t2.medium and t2.large VMs where there is only 2-cores available. This increase in performance is most likely due to the nature of T2 instances as burstable performance instances \cite{awsvmtype}. Although the number of cores remains the same between these tiers, the number of credits increases so that the CPU can burst above the baseline more frequently. This ability to burst will have a direct effect on the benchmark results. The largest increase in performance however is when switching between the single core system of a t2.small and the 2-core t2.medium instance type, where the latter scores very nearly double of the former, whilst the cost/hour increases by exactly double.
+
+% % AWS Performance Table
+% % =====================
+% % \begin{landscape}
+\begin{table*}[!h]
+    \caption{Performance result averages for Amazon EC2 across 5 iterations per instance type}
+    \label{tab:ec2}
+  \begin{adjustbox}{width=\linewidth,center}
+    \csvautotabularcustom[respect all]{\data/ec2_averages.csv}
+%   \begin{tabular}{|l|r|r|r|r|r|r|r|r|r|r|}
+%     \hline
+%     \multicolumn{11}{|c|}{Amazon EC2: Average Results} \\
+%     \hline
+%                   & t2.micro & t2.small & t2.medium & t2.large & m4.large & m4.xlarge & m4.2xlarge & c4.large & c4.xlarge & c4.2xlarge \\
+%     \hline
+%     cores         & 1.00     & 1.00     & 2.00      & 2.00     & 2.00     & 4.00      & 8.00       & 2.00     & 4.00      & 8.00       \\
+%     memory (GB)   & 1.00     & 2.00     & 4.00      & 8.00     & 8.00     & 16.00     & 32.00      & 3.75     & 7.50      & 15.00      \\
+%     \hline
+%     compiler      & 81.40    & 74.45    & 209.83    & 228.43   & 138.10   & 270.11    & 521.63     & 156.55   & 311.31    & 556.12     \\
+%     compress      & 47.04    & 47.49    & 93.90     & 93.14    & 59.97    & 118.08    & 238.94     & 68.66    & 136.74    & 276.84     \\
+%     crypto        & 39.14    & 48.64    & 104.25    & 110.68   & 59.49    & 119.11    & 237.17     & 70.71    & 143.20    & 287.60     \\
+%     derby         & 15.49    & 37.44    & 87.84     & 179.16   & 117.59   & 224.29    & 437.86     & 136.17   & 261.17    & 504.95     \\
+%     mpegaudio     & 3.59     & 6.99     & 13.34     & 39.32    & 41.31    & 83.69     & 167.46     & 49.26    & 99.63     & 198.13     \\
+%     scimark.large & 2.18     & 4.23     & 8.19      & 12.29    & 26.21    & 48.03     & 75.07      & 28.46    & 54.34     & 82.04      \\
+%     scimark.small & 6.92     & 13.84    & 27.74     & 41.03    & 89.82    & 182.14    & 354.09     & 106.12   & 211.10    & 410.20     \\
+%     serial        & 5.27     & 8.49     & 15.64     & 27.56    & 47.44    & 92.81     & 180.74     & 55.38    & 109.67    & 211.22     \\
+%     startup       & 19.78    & 19.20    & 25.48     & 26.30    & 21.91    & 26.18     & 27.93      & 25.41    & 30.65     & 32.95      \\
+%     sunflow       & 2.11     & 4.12     & 8.25      & 12.10    & 23.80    & 47.56     & 94.90      & 28.05    & 55.99     & 112.61     \\
+%     xml           & 13.47    & 25.04    & 49.00     & 85.51    & 153.39   & 303.43    & 608.58     & 179.60   & 357.84    & 717.18     \\
+%     \hline
+%     geometric mean       & 11.08    & 17.38    & 34.67     & 51.13    & 57.18    & 107.35    & 196.38     & 66.31    & 125.58    & 227.19     \\
+%     w/o startup   & 10.46    & 17.21    & 35.76     & 54.65    & 62.94    & 123.62    & 238.67     & 72.98    & 144.60    & 275.59     \\
+%     variance            &  0.49 &	0.08  &	0.46  &	1.07  &	0.23  &	0.59  &	6.81  &	0.25  &	0.18  &	11.04 \\
+%     standard deviation  &  0.70 &	0.28  &	0.68  &	1.03  &	0.48  &	0.77  &	2.61  &	0.50  &	0.42  &	3.32 \\
+%     \hline
+%     cost/hour     & \$0.014  & \$0.028  & \$0.056   & \$0.112  & \$0.132  & \$0.264   & \$0.528    & \$0.119  & \$0.238   & \$0.477    \\
+%     \hline
+%   \end{tabular}
+  \end{adjustbox}
+\end{table*}
+% % \hspace*{-2cm}
+% % \end{landscape}
+% % =======================
+
+The newer general purpose M4 instance types start with a baseline specification of 2-cores and 8GB memory capacity, alike other large instance types. This m4.large instance outperforms the equivalent t2.large instance by a mere 12\%, when the cost increase from \$0.112 to \$0.132 is an increase by 17\%. The reason for the difference in performance being so minor could be due to the T2s burstable performance. Each T2 VM receives CPU credits at the beginning of each hour, which allow them to burst above the baseline core usage \cite{awsvmtype}. The full benchmark run time is approximately 2.25 hours, and is likely to be using near 100\% utilization of that which is available at all times. For the first two hours of running, the benchmark will use up the available credits, and run at baseline for the remaining time before more credits are provided at the hourly boundary. For the last hour slot where only 25\% of the time is used, the benchmark may be able to burst with the available credits for the remaining duration of the benchmark. If when bursting, the performance of this t2.large instance was greater than that of an m4.large, but far lower when no credits were available and running at baseline, the expected performance would be within the region of that which is seen. The startup and compiler tests which run towards the beginning of the benchmark, while credits would be available to a T2 instance, have greater results for the T2 instance than the M4, whereas others such as scimark and serial, have superior performance on the M4 instance. If the benchmark ran over the entire VM hour slots provided with high utilization, the scores would likely be worse than at present due to running out of credits in the third hour and running at baseline for the remainder of the hour.
+
+% % Graph comparison of EC2 types
+% % =====================
+% \begin{figure}[ht]
+%   \centering
+%   \includegraphics[width=\linewidth]{ec2chart.png}
+%   \caption{Comparison of EC2 tier performance}
+%   \label{fig:ec2chart}
+% \end{figure}
+% % =====================
+
+% EC2 variability
+% =====================
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\linewidth]{ec2_variability.png}
+  \caption{EC2 average performance results with variance}
+  \label{fig:ec2variability}
+\end{figure}
+% =====================
+
+Amazon also has a compute optimised instance selection within the C4 series which have the highest performing CPUs out of the different series. Across the board these perform around 16\% better at the benchmark than the M4 series for each instance type, whilst costing around 10\% less. This reduction in cost is most likely due to the compute optimised variants having less than half the memory capacity of the general purpose M4s. As the benchmark does not require large amounts of memory, the additional memory capacity of the M4 machines does not have much, if any impact on the results seen. It is likely that a high-memory consuming workload would perform better on M4 instances than the C4 series, as the improved CPU performance would weigh less when compared to the memory capacity gained. When comparing the C4 series to a T2 instance at similar capacity, in this case c4.large and t2.medium, there is a less than double performance improvement with slightly more than double the cost/hour. If these instances are compared by scores excluding the single threaded startup test, the performance per cost is nearly equivalent. Moving from one C4 instance to the next, the performance results do not quite keep up with the cost and core count increase. However, when comparing a overall result without the influence of the single threaded `startup' test, the performance per cost increases approximately linearly.
+
+
+\subsubsection{Comparison of Azure and EC2}
+
+The results for similar specification VM instances across both cloud providers showed near same performance for some of the fixed instances. An example of which is Standard\_D2 and m4.large, both 2-core instance types with 7GB and 8GB of memory respectively, that were within an average composite score of $60\pm3$, with the D2 taking the lead. Similar results are also seen between the Standard\_D3 and m4.xlarge, with Azure's D3 marginally outperforming again. Although this is the case, Azure's D-series does have a higher proportion increase in cost per hour than performance gained, when looking at the M4 equivalent of Amazon's EC2. The newer optimised compute Dv2-series also outperforms the EC2 equivalent, the C4 instance types, with 2-core D2\_v2 scoring a 38\% higher result than the equivalent c4.large, with only a 23\% increase to cost. Other D2v2 instances however have performance increases more proportionate to the cost/hour increase. One of the main benefits to Azure's higher tier offerings is that of a single core machine. Neither the M4, or C4 instance types provide a single core machine, whereas Azure has both the D-series Standard\_D1 and Dv2-series Standard\_D1\_v2. For any workloads that are only designed to run in a single thread, if it is preferred that these run on the newer compute optimised or general purpose EC2 instances, they should be batch loaded onto the system to make the most of available virtual cores.
+
+% Graph comparison of EC2 and Azure types
+% =====================
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\linewidth]{bothchart.png}
+  \caption{Comparison of Azure and EC2 performance}
+  \label{fig:bothchart}
+\end{figure}
+% =====================
+
+Amazon's burstable T2 instance types perform well for the lower tier instances. Azure's A1 performs slightly worse to that of a t2.micro instance, where the cost of the micro is considerably less. The single core t2.small outperforms the Standard\_A1 whilst still costing \$0.016 cheaper per hour. The results obtained however may be skewed in favour of the burstable performance instances, due to the nature of the task being run and the length of the benchmark execution; as discussed in section \ref{sec:eval:awsresults}. When the T2 instances have CPU credits available, the bursting performance is high, with similar results to the optimised compute D2\_v2 Azure instance type and A4 8-core in the initial compiler test, at lower cost. For this reason, the T2 would perform the best for cost if performance requirements are variable and follow more of a `bursty' pattern. If the workload has high computation requirements over an extended period of time, the higher core compute optimised machines may be better, assuming the workload runs on multiple threads. If this workload requires large utilization but is single threaded, the newer higher clock speed instance types would result in superior performance.
+
+\subsubsection{Extended Testing}\label{sec:eval:extended}
+
+Some workloads may be single threaded, and therefore unable to benefit from the additional cores that a virtual machine offers. This limits the number of options for these sorts of tasks on current cloud offerings, as the price of multicore systems represents the performance gained from additional cores. However, it may be possible to batch load a number of single-threaded tasks on to a multicore instance type. If the performance of a single thread on a multiple core instance is higher than that of a single core system, and the price per core is the same, it may be worth loading a single threaded job per core on the multicore system to take advantage of the higher performance. SPECjvm2008 supports running in single threaded mode\cite{specjvmguide}, and so results have been collected of the performance across the multicore variants of both the D-series and Dv2-series. As the previously collected results were not greatly influenced by high memory instance types, the D11-13 VM types have been excluded from the testing process.
+
+% % Azure single threaded Performance Table
+% % =====================
+\begin{table*}[!h]
+  \caption{Single-threaded performance result averages from Azure across 5 iterations per instance type}
+  \label{tab:singleazure}
+    \begin{adjustbox}{width=\linewidth,center}
+      \csvautotabularcustom[respect all]{\data/azure_singlethread_averages.csv}
+%     \begin{tabular}{|l|r|r|r|r|r|r|r|r|}
+%       \hline
+%       \multicolumn{9}{|c|}{Azure: Average Single-Threaded Results} \\
+%       \hline
+%       % \cline{2-9}
+%       & Standard\_D1 & Standard\_D2 & Standard\_D3 & Standard\_D4 & Standard\_D1\_v2 & Standard\_D2\_v2 & Standard\_D3\_v2 & Standard\_D4\_v2 \\
+%       \hline
+%       cores         & 1.00         & 2.00         & 4.00         & 8.00         & 1.00             & 2.00             & 4.00             & 8.00             \\
+% memory (GB)   & 3.50         & 7.00         & 14.00        & 28.00        & 3.50             & 7.00             & 14.00            & 28.00            \\
+% \hline
+% compiler      & 55.42        & 83.39        & 74.72        & 82.20        & 80.39            & 117.76           & 120.17           & 117.31           \\
+% compress      & 34.22        & 35.07        & 32.88        & 34.07        & 47.99            & 48.91            & 48.86            & 47.52            \\
+% crypto        & 36.95        & 39.40        & 36.17        & 39.09        & 55.52            & 55.32            & 57.31            & 57.11            \\
+% derby         & 63.32        & 66.29        & 56.87        & 66.53        & 96.54            & 83.95            & 92.25            & 92.17            \\
+% mpegaudio     & 24.63        & 25.82        & 23.62        & 25.01        & 36.29            & 36.01            & 36.07            & 36.24            \\
+% scimark.large & 15.64        & 16.26        & 15.73        & 16.35        & 20.34            & 22.06            & 21.87            & 22.60            \\
+% scimark.small & 48.15        & 49.25        & 49.15        & 49.24        & 67.47            & 67.59            & 70.00            & 69.30            \\
+% serial        & 27.99        & 31.12        & 26.06        & 29.72        & 43.10            & 43.56            & 44.08            & 44.15            \\
+% startup       & 13.77        & 18.16        & 18.97        & 20.09        & 20.69            & 24.55            & 27.23            & 27.29            \\
+% sunflow       & 14.20        & 28.55        & 48.45        & 52.65        & 20.91            & 38.64            & 70.43            & 71.10            \\
+% xml           & 89.71        & 97.97        & 84.62        & 95.64        & 140.59           & 137.52           & 144.38           & 141.53           \\
+% \hline
+% geometric mean       & 32.32        & 38.14        & 40.15        & 40.17        & 47.33            & 52.36            & 57.05            & 56.87            \\
+% w/o sunflow   & 35.10        & 39.26        & 39.06        & 39.10        & 51.37            & 53.97            & 55.86            & 55.61            \\
+% variance            & 1.89  &	2.51  &	37.21 &	2.19  &	9.85  &	8.96  &	2.85  &	2.67  \\
+% standard deviation  & 1.38  &	1.59  &	6.10  &	1.48  &	3.14  &	2.99  &	1.69  &	1.63  \\
+% \hline
+% cost/hour     & \$0.077      & \$0.154      & \$0.308      & \$0.616      & \$0.073          & \$0.146          & \$0.293          & \$0.585          \\
+%       \hline
+%     \end{tabular}
+\end{adjustbox}
+\end{table*}
+% % =====================
+
+% Single-Threaded variability
+% =====================
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=\linewidth]{thread_variability.png}
+  \caption{Azure single-threaded average performance results with variance}
+  \label{fig:threadvariability}
+\end{figure}
+% =====================
+
+The different VM types of a particular series appear to have very similar single-threaded performance across most tests. This is most likely due to the different instance tiers within a series being provisioned from the same hardware, with virtualisation techniques in place over the top. The maximum clock speed of the CPUs would be the same, resulting in near identical single-threaded performance. However, the `sunflow' test does appear to improve from one instance to the next, apart from the largest instance type, the D4. This is due to the nature of the test, whereby one bundle of 4 threads is used per hardware thread. When running in single-threaded mode, the test is still creating 4 threads which see increased performance as the number of hardware threads increases, up to 4 cores \cite{shiv2009specjvm2008}. The D4 instance has 8 cores, and so would not perform more optimally unless a second bundle was introduced. This has a negative impact on the results, and so overall figures have also been calculated with the sunflow test removed. When comparing the D-series to the Dv2-series as a whole, there is a substantial increase in performance across all tests. This is a direct result of the improved newer CPUs within the Dv2-series, and equates to a near 40\% performance increase. However, one outlier arose during the testing process on one of the Standard\_D3 instance types. The benchmark results were significantly greater, by approximately 40\%, across all tests than other instances within the same tier and series (appendices: figure \ref{fig:threadvariability}). This single instance of testing in fact showed results that are very similar with instance types within the Dv2-series. Without further testing taking place it is difficult to identify the underlying cause of this result.
+
+% Graph of single threaded performance on azure
+% =====================
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.8\linewidth]{singlethread.png}
+  \caption{Azure single threaded performance on both D and Dv2 series}
+  \label{fig:threadchart}
+\end{figure}
+% =====================
+
+Another avenue of extended testing took the form of measuring performance over time. The intention of which is to see if the performance can improve over time when a freshly instantiated instance performs poorly initially, or whether there will be continually lesser performance. However, rather than running the entire benchmark after provisioning an instance, one test was used to give an indication of how well the VM performed. The compression test out of the SPECjvm2008 benchmark suite was chosen, as it represents the power of the underlying systems well in the tests so far. The test itself also scales near linearly with the number of threads \cite{shiv2009specjvm2008}, which should provide better performance estimates on multi-core machines. To measure the performance of instances over time, this single `compress' test was run on 10 Standard\_D1\_v2 instances a total of 6 times, with a 10 minute break between runs. The results can be seen in table \ref{tab:timeazure}.
+
+% % Performance over time results Table
+% % =====================
+\begin{table*}[!h]
+  \caption{Compression test ran every ten minutes on 10 different instances}
+  \label{tab:timeazure}
+    \begin{adjustbox}{width=\linewidth,center}
+      \csvautotabularcustom[respect all]{\data/time_results.csv}
+%     \begin{tabular}{|l|r|r|r|r|r|r|r|r|r|r|}
+%       \hline
+%       \multicolumn{11}{|c|}{Compression test results over time} \\
+%       \cline{9-11}
+% \multicolumn{8}{|c}{} &\multicolumn{3}{|c|}{Distance from Iteration 1} \\
+%       \hline
+%       Instance & Iteration 1 & Iteration 2 & Iteration 3 & Iteration 4 & Iteration 5 & Iteration 6 & Average & Max decrease                & Max increase & From average      \\
+%       \hline
+% 1            & 51.19   & 51.86       & 51.64       & 50.42       & 51.95       & 51.62       & 51.45   & -0.77                       & 0.76         & 0.26         \\
+% 2            & 51.97   & 50.48       & 51.72       & 52.15       & 51.01       & 51.39       & 51.45   & -1.49                       & 0.18         & -0.52        \\
+% 3            & 49.4    & 50.24       & 49.88       & 50.03       & 49.75       & 50.27       & 49.93   & 0.00                        & 0.87         & 0.53         \\
+% 4            & 47.8    & 48.37       & 47.05       & 47.58       & 47.43       & 48.81       & 47.84   & -0.75                       & 1.01         & 0.04         \\
+% 5            & 48.77   & 51.37       & 50.29       & 51.08       & 50.35       & 50.35       & 50.37   & 0.00                        & 2.60         & 1.60         \\
+% 6            & 49.7    & 48.93       & 48.85       & 49.85       & 48.48       & 48.81       & 49.10   & -1.22                       & 0.15         & -0.60        \\
+% 7            & 51.71   & 51.27       & 51.56       & 51.23       & 50.42       & 50.87       & 51.18   & -1.29                       & 0.00         & -0.53        \\
+% 8            & 49.64   & 50.33       & 52.05       & 50.65       & 51.67       & 50.58       & 50.82   & 0.00                        & 2.41         & 1.18         \\
+% 9            & 47.68   & 49.16       & 49.55       & 49.15       & 49.75       & 48.94       & 49.04   & 0.00                        & 2.07         & 1.36         \\
+% 10           & 50.26   & 49.97       & 48.74       & 49.07       & 49.68       & 49.20       & 49.49   & -1.52                       & 0.00         & -0.77        \\
+%       \hline
+% \multicolumn{7}{|r|}{Averages}   & %        &             &             &             &             &             &
+% 50.07   & -0.70                       & 1.01         & 0.74         \\
+%       \hline
+%     \end{tabular}
+\end{adjustbox}
+\end{table*}
+% % =====================
+
+The output of the compression test is very similar across the board for this set of tests, with the results deviating by only 6\% lower and 4\% higher performance than the overall average. Some of the instances remained relatively consistent across all 6 iterations, such as instance numbers 3 and 7, with a maximum change in result between runs at 0.84 and 0.81 respectively. Others performed more erratically, such as instance 5, where the compression result increases by 2.60 from the first iteration to the second. Instance 4 performed particularly poorly when compared to the others, with the lowest score seen in the third iteration, and no scores above 48.81. Half of the instances did not produce results that low, and the lowest score of another three were not far below this value. The higher performing instances, 1, 2, and 7, all scored above 50.42, with an average score greater than 51.18.
+
+The intention for this set of testing however is to evaluate how the first test iteration performs in relation to the rest of the results. In 40\% of cases, the initial test iteration was the lowest score seen, with the performance increasing by more than 2.00 points in three of them. However, in two of the instance results, the initial test run result was the highest seen over the time period, with a decrease in performance from this result by as much as 1.52.
+
+The difference from the initial result to the average score for the VM across the results ranged from 0.04, where the initial result gave a good indication to the performance of the instance, to 1.60 where the average was greater than the initial result would have indicated. These differences from the initial result show that it is hard to judge an instance from an initial reading; in some cases this can work well, but others it will not. The variability from one instance to the next would make this method impractical to measure a VMs performance before making use of it. To refine this approach, the initial test could be run for a longer duration in an attempt to get a better representation of the instances performance. Different VM types may also perform less or more variably over time, and so a higher instance tier may produce more useful results.
+
+%% FUTURE WORK
+%% =========================================================================================================================
+
+\section{Future Work}
+
+\subsection{Additional Metrics}
+One potential expansion to this project would be to collect more performance information from cloud VMs. By using SPECjvm2008, CPU and memory performance were tested in some capacity, but there is little testing of network bandwidth/latency and disk read/write speeds. As the disk used is not necessarily directly influenced by the instance types, this would require different testing methods. The disk performance could be factored into scheduling decisions when a workload is known to require many disk operations. For HPC workloads where there is greater interaction between the different nodes within a system, network latency and bandwidth may be important. Azure offer a network-optimised instance series which offers greater bandwidth than the other instances \cite{azurevmtype}. A direct comparison between these offerings would provide additional information into how much the network performance increases, and whether the network-optimised instances provide superior latency for real-time applications.
+
+\subsection{Further Benchmarking}
+The data collected during the project spanned multiple different instance types across two cloud providers, but were all tested within the same availability zone for each provider. An interesting extension would be to collect data from each of the available regions across a greater number of different cloud provider offerings, presenting the opportunity to discover trends or variability in a more in-depth analysis of performance. Another extension would be to add additional test suits, providing the option to pick between multiple different benchmarks when running the tool.
+
+\subsection{Spot Instance Benchmarking}
+Another avenue to investigate would be the performance of Amazon spot instances based on the current price. This could provide insights into how the spare EC2 infrastructure performs in comparison to regular on-demand instances. Exploration of spot instance performance could discover whether higher spot prices, signifying lower spare capacity, influences the performance of provisioned virtual machines, or an increase in variability of several different instances.
+
+\subsection{Improved Reliability}
+The final optimisation which would be important to the tool is to create a different system for running the benchmark and obtaining results. At present this is completed by using SSH to connect to the remote machines, and SFTP to extract the performance data, however a slightly more complex model would likely perform more reliably and permit additional functionality. The initial idea for a replacement is to have a service built in to the image that is started upon running the VM, which handles messages from the tool to; run a particular benchmark application, reply with status messages, and return the data in a recognised format (such as json or csv). Alongside this, it may be possible to containerise the code running on either the virtual machine remotely, or the local master, to increase the usability.
+
+%% CONCLUSION
+%% =========================================================================================================================
+
+\section{Conclusions}
+
+Throughout the project, the intent has been to create a benchmarking tool to collect performance information of cloud infrastructure, which can in turn be used to make superior scheduling decisions. The tool has been designed to permit the direct comparison of compute performance from one virtual machine to another, irrespective of the service provider. At the time of writing, the presented system may only support the SPECjvm2008 test suite, however the end goal is for the tool to act as a harness for other benchmarking software. Whilst others, \cite{li2010cloudcmp}, \cite{chhetri2013smart}, perform similar experiments to those covered here, this project aims to provide this tool as an available open-source system for others to make use of. The tool has been used to measure a wide variety of instance type offerings from two different cloud service providers, where it is observed that an increase in cost does not always reflect in higher compute performance. Although the data collected does not cover every cloud provider and all instance types, the tools and codebase created can be extended to enable the ease of gathering information for cloud infrastructure that has not been tested within this project.
+
+\bibliography{IEEEabrv,research}
+\bibliographystyle{IEEEtran}
+
+\end{document}
