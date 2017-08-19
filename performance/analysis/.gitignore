@@ -1,6 +1,9 @@
-#R files
+# R files
 .Rproj.user
 *.Rproj
 .Rhistory
 .RData
 .Ruserdata
+
+# Override Python lib ignore 
+!lib/
