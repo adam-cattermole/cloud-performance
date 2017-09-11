@@ -1,0 +1,19 @@
+VM Type,VM Size,Cores,Memory GB,Cost $/hour
+basic,a1,1.00, 1.75,0.044
+basic,a2,2.00, 3.50,0.088
+basic,a3,4.00, 7.00,0.176
+basic,a4,8.00,14.00,0.352
+standard,d1,1.00, 3.50,0.077
+standard,d2,2.00, 7.00,0.154
+standard,d3,4.00,14.00,0.308
+standard,d4,8.00,28.00,0.616
+standard,d11,2.00,14.00,0.195
+standard,d12,4.00,28.00,0.390
+standard,d13,8.00,56.00,0.780
+standard,d1 v2,1.00, 3.50,0.073
+standard,d2 v2,2.00, 7.00,0.146
+standard,d3 v2,4.00,14.00,0.293
+standard,d4 v2,8.00,28.00,0.585
+standard,d11 v2,2.00,14.00,0.185
+standard,d12 v2,4.00,28.00,0.371
+standard,d13 v2,8.00,56.00,0.741

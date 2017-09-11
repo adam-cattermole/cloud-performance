@@ -44,7 +44,7 @@ ggplotSummaryCi = function(summary, measurevar="overall", xvalue="cost", groupva
   ggplot(summary, aes_string(x=xvalue,y=measurevar, colour="vm_size")) +
     geom_errorbar(aes(ymin=summary[[measurevar]]-ci, ymax=summary[[measurevar]]+ci), width=xscale/50, position=pd) +
     suppressMessages(geom_point(position=pd)) +
-    scale_x_continuous(breaks=seq(0,xscale,0.05), limits=c(0,xscale)) +
+    scale_x_continuous(breaks=seq(0,xscale,max(c(round((xscale/0.4))*0.05,0.05))), limits=c(0,xscale)) +
     scale_y_continuous(breaks=seq(0,yscale,round((yscale/10)/5)*5),limits=c(0,yscale)) +
     theme_bw() +
     scale_colour_brewer(palette = "Set1") +
@@ -67,8 +67,8 @@ ggplotSummaryCi = function(summary, measurevar="overall", xvalue="cost", groupva
 
 ggplotSummaryAzure = function(data, measurevar="overall", xvalue="cost", groupvar=c("vm_type","vm_size","cost"), label=c("Cost ($/hour)", "Overall Performance"), title=NULL, xinterval = 0.1, yinterval = 50) {
   s = summarySE(data, measurevar, groupvar) %>%
-    mutate(vm_size = toupper(vm_size)) %>%
-    mutate(vm_size = factor(vm_size, levels=mixedsort(vm_size)))
+    mutate(vm_size = factor(toupper(gsub("_"," ",vm_size)), levels=toupper(gsub("_"," ",azure.order))))
+  print(s)
   ggplotSummaryCi(s, measurevar, xvalue, groupvar, label, title, xinterval = xinterval, yinterval = yinterval)
 }
 
