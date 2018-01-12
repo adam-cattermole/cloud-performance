@@ -3,8 +3,8 @@
 % for Lecture Notes in Computer Science,
 % version 2.4 for LaTeX2e as of 16. April 2010
 %
-\documentclass{llncs}
-\pagestyle{plain}
+\documentclass{entcs} \usepackage{entcsmacro}
+% \pagestyle{plain}
 \usepackage{graphicx}
 % \usepackage{float}
 \usepackage{cite}
@@ -34,26 +34,40 @@
 \newcommand{\graphs}{../analysis/graphs}
 %
 %
+\def\lastname{Cattermole and Forshaw}
 \begin{document}
 %
-\title{An automated approach to Cloud Performance Benchmarking}
+\begin{frontmatter}
+  \title{An automated approach to Cloud Performance Benchmarking} \author{Adam Cattermole\thanksref{myemail}},
+  % \address{School of Computing Science\\ Newcastle University\\
+    % Newcastle upon Tyne, United Kingdom}
+  \author{Matthew Forshaw\thanksref{coemail}}
+  \address{School of Computing Science\\Newcastle University\\
+    Newcastle upon Tyne, United Kingdom} \thanks[myemail]{Email:
+    \href{mailto:a.cattermole@newcastle.ac.uk} {\texttt{\normalshape
+        a.cattermole@newcastle.ac.uk}}} \thanks[coemail]{Email:
+    \href{mailto:matthew.forshaw@newcastle.ac.uk} {\texttt{\normalshape
+        matthew.forshaw@newcastle.ac.uk}}}
+
+
+% \title{An automated approach to Cloud Performance Benchmarking}
 %
-\titlerunning{An automated approach to Cloud Performance Benchmarking}  % abbreviated title (for running head)
+% \titlerunning{An automated approach to Cloud Performance Benchmarking}  % abbreviated title (for running head)
 %                                     also used for the TOC unless
 %                                     \toctitle is used
 %
-\author{Adam Cattermole \and Matthew Forshaw}
+% \author{Adam Cattermole \and Matthew Forshaw}
 %
-\authorrunning{Ivar Ekeland et al.} % abbreviated author list (for running head)
+% \authorrunning{Ivar Ekeland et al.} % abbreviated author list (for running head)
 %
 %%%% list of authors for the TOC (use if author list has to be modified)
-\tocauthor{Adam Cattermole, Matthew Forshaw}
+% \tocauthor{Adam Cattermole, Matthew Forshaw}
 %
-\institute{School of Computing Science, Newcastle University, Newcastle upon Tyne, NE1 7RU\\
-\email{a.cattermole@newcastle.ac.uk},
-\email{matthew.forshaw@newcastle.ac.uk}}
+% \institute{School of Computing Science, Newcastle University, Newcastle upon Tyne, NE1 7RU\\
+% \email{a.cattermole@newcastle.ac.uk},
+% \email{matthew.forshaw@newcastle.ac.uk}}
 
-\maketitle              % typeset the title of the contribution
+% \maketitle              % typeset the title of the contribution
 
 \begin{abstract}
 Cloud infrastructure has been supplied for many years as an on-demand service across numerous different providers. The different instance types are provided with hardware specifications, but no concrete performance metrics. Benchmarking virtual machines is one method to contrast and compare between the different services offered across several providers. %The on-demand instant nature of cloud infrastructure is offset by the costs incurred.
@@ -61,6 +75,7 @@ This paper presents a tool which permits the automated collection of cloud infra
 \keywords{cloud benchmarking, performance evaluation, open source}
 \end{abstract}
 %
+\end{frontmatter}
 
 %% INTRODUCTION
 %% =========================================================================================================================
@@ -90,7 +105,7 @@ Chhetri \textit{et al}\cite{chhetri2013smart} developed a framework called \text
 
 \subsection{SPEC JVM}
 
-SPECjvm2008 is a tool used to benchmark the performance of a Java Runtime Environment (JRE). The benchmark simulates some real life applications which typically have costly workloads, such as cryptographic and scientific functions. Results obtained through the use of SPECjvm2008 are representative of the underlying hardware systems. Importantly, the benchmark makes use of and stresses a modern multi-core processor. The different experiments provide evaluation of the performance of many system aspects, such as the number of cores and processors, the frequency of these processors, integer and floating point operations, cache hierarchy and memory sub systems \cite{shiv2009specjvm2008}. However, there is limited testing of disk read/writes and no network testing whatsoever \cite{specjvm}. SPECjvm2008 may not be the most proficient in fully stressing the hardware within a system, however it has vast interoperability, as the requirement is based upon a JRE being present on the system. By default, each test in the suite initially runs as a warmup for 2:00 minutes, followed by 4:00 minutes for the test measurement.
+SPECjvm2008 is a tool used to benchmark the performance of a Java Runtime Environment (JRE). The benchmark simulates some real life applications which typically have costly workloads, such as cryptographic and scientific functions. Results obtained through the use of SPECjvm2008 are representative of the underlying hardware systems. Importantly, the benchmark makes use of and stresses a modern multi-core processor. The different experiments provide evaluation of the performance of many system aspects, such as the number of cores and processors, the frequency of these processors, integer and floating point operations, cache hierarchy and memory sub systems \cite{shiv2009specjvm2008}. However, there is limited testing of disk read/writes and no network testing whatsoever \cite{specjvm}. SPECjvm2008 may not be the most proficient in fully stressing the hardware within a system, however it has vast interoperability, as the requirement is based upon a JRE being present on the system. By default, each test in the suite initially runs as a warmup for two minutes, followed by four minutes for the test measurement.
 
 %% IMPLEMENTATION
 %% =========================================================================================================================
@@ -322,15 +337,15 @@ Some workloads may be single threaded, and therefore unable to benefit from the 
 
 The different VM types of a particular series appear to have very similar single-threaded performance across most tests. This is most likely due to the different instance tiers within a series being provisioned from the same hardware, with virtualisation techniques in place over the top. The maximum clock speed of the CPUs would be the same, resulting in near identical single-threaded performance. However, the `sunflow' test does appear to improve from one instance to the next, apart from the largest instance type, the D4. This is due to the nature of the test, whereby one bundle of 4 threads is used per hardware thread. When running in single-threaded mode, the test is still creating 4 threads which see increased performance as the number of hardware threads increases, up to 4 cores \cite{shiv2009specjvm2008}. The D4 instance has 8 cores, and so would not perform more optimally unless a second bundle was introduced. This has a negative impact on the results, and so overall figures have also been calculated with the sunflow test removed. When comparing the D-series to the Dv2-series as a whole, there is a substantial increase in performance across all tests. This is a direct result of the improved newer CPUs within the Dv2-series, and equates to a near 40\% performance increase. However, one outlier arose during the testing process on one of the Standard\_D3 instance types. The benchmark results were significantly greater, by approximately 40\%, across all tests than other instances within the same tier and series (figure \ref{fig:threadvariability}). This single instance of testing in fact showed results that are very similar with instance types within the Dv2-series. Without further testing taking place it is difficult to identify the underlying cause of this result.
 
-% Graph of single threaded performance on azure
-% =====================
-\begin{figure}[ht]
-  \centering
-  \includegraphics[width=0.8\linewidth]{singlethread.png}
-  \caption{Azure single threaded performance on both D and Dv2 series}
-  \label{fig:threadchart}
-\end{figure}
-% =====================
+% % Graph of single threaded performance on azure
+% % =====================
+% \begin{figure}[ht]
+%   \centering
+%   \includegraphics[width=0.8\linewidth]{singlethread.png}
+%   \caption{Azure single threaded performance on both D and Dv2 series}
+%   \label{fig:threadchart}
+% \end{figure}
+% % =====================
 
 Another avenue of extended testing took the form of measuring performance over time. The intention of which is to see if the performance can improve over time when a freshly instantiated instance performs poorly initially, or whether there will be continually lesser performance. However, rather than running the entire benchmark after provisioning an instance, one test was used to give an indication of how well the VM performed. The compression test out of the SPECjvm2008 benchmark suite was chosen, as it represents the power of the underlying systems well in the tests so far. The test itself also scales near linearly with the number of threads \cite{shiv2009specjvm2008}, which should provide better performance estimates on multi-core machines. To measure the performance of instances over time, this single `compress' test was run on 10 separate Standard\_D1\_v2 instances a total of 6 times, with a 10 minute break between runs. The results can be seen in table \ref{tab:timeazure}, where the penultimate 2 columns indicate the max difference between the first iteration and all subsequent iterations, and the difference from the average for the last column.
 
@@ -356,11 +371,19 @@ The difference from the initial result to the average score for the VM across th
 
 \section{Conclusions}
 
-Throughout the project, the intent has been to create a benchmarking tool to collect performance information of cloud infrastructure, which can in turn be used to make superior scheduling decisions. The tool has been designed to permit the direct comparison of compute performance from one virtual machine to another, irrespective of the service provider. At the time of writing, the presented system may only support the SPECjvm2008 test suite, however the end goal is for the tool to act as a harness for other benchmarking software. Whilst others, \cite{li2010cloudcmp}, \cite{chhetri2013smart}, perform similar experiments to those covered here, this project aims to provide this tool as an available open-source system for others to use~\footnote{Github repository to be linked from the camera ready version of this manuscript.}. The tool has been used to measure a wide variety of instance type offerings from two different cloud service providers, where it is observed that an increase in cost does not always reflect in higher compute performance.
+Throughout this research, the intent has been to create a benchmarking tool to collect performance information of cloud infrastructure, which can in turn be used to make superior scheduling decisions. The tool has been designed to permit the direct comparison of compute performance from one virtual machine to another, irrespective of the service provider. At the time of writing, the presented system may only support the SPECjvm2008 test suite, however the end goal is for the tool to act as a harness for other benchmarking software. Whilst others, \cite{li2010cloudcmp}, \cite{chhetri2013smart}, perform similar experiments to those covered here, we aim to provide this tool as an available open-source system for others to use~\footnote{https://github.com/NewcastleComputingScience/cloud-performance}. The tool has been used to measure a wide variety of instance type offerings from two different cloud service providers, where it is observed that an increase in cost does not always reflect in higher compute performance.
 
+
+%
+% ---- Bibliography ----
+%
+\bibliographystyle{entcs}
+\bibliography{IEEEabrv,research}
+% \bibliography{splncs03,research}
 
 \begin{appendices}
-  \renewcommand{\thesection}{\appendixname~\Alph{section}}
+  % \section
+  % \renewcommand{\thesection}{\appendixname~\Alph{section}}
   \section{VM Instance Specifications}
   % % Performance over time results Table
   % % =====================
@@ -385,10 +408,6 @@ Throughout the project, the intent has been to create a benchmarking tool to col
   % % =====================
 \end{appendices}
 
-%
-% ---- Bibliography ----
-%
-\bibliographystyle{splncs03}
-\bibliography{IEEEabrv,research}
+
 
 \end{document}

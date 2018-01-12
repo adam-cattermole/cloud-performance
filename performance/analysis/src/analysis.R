@@ -57,11 +57,14 @@ write.csv(format(data.average.azure.standard.v2, digits=3, nsmall=2), file = "da
 # ggplotSummaryAzure(merge(test, azure.specs), title="Test")
 
 ggplotSummaryAzure(merge(data.azure.basic, azure.specs), title="Performance of Azure 'Basic' Instance Types")
-ggsave("data_azure_basic.png", device="png", path="graphs/", width = 200, height = 180, units="mm")
+# ggsave("data_azure_basic.png", device="png", path="graphs/", width = 300, height = 150, units="mm", bg = "transparent")
+ggsave("data_azure_basic.png", device="png", path="graphs/", width = 200, height = 180, units = "mm", bg = "transparent")
 ggplotSummaryAzure(merge(data.azure.standard, azure.specs), title="Performance of Azure 'Standard' Instance Types")
-ggsave("data_azure_standard.png", device="png", path="graphs/", width = 200, height = 180, units="mm")
+# ggsave("data_azure_standard.png", device="png", path="graphs/", width = 300, height = 150, units="mm", bg = "transparent")
+ggsave("data_azure_standard.png", device="png", path="graphs/", width = 200, height = 180, units = "mm", bg = "transparent")
 ggplotSummaryAzure(merge(data.azure.standard.v2, azure.specs), title="Performance of Azure 'Standard V2' Instance Types")
-ggsave("data_azure_standard_v2.png", device="png", path="graphs/", width = 200, height = 180, units="mm")
+# ggsave("data_azure_standard_v2.png", device="png", path="graphs/", width = 300, height = 150, units="mm", bg = "transparent")
+ggsave("data_azure_standard_v2.png", device="png", path="graphs/", width = 200, height = 180, units = "mm", bg = "transparent")
 
 
 #### EC2: Initial Reproduction of Graphics ####
@@ -92,11 +95,14 @@ data.aws.c4
 ## Graphs
 
 ggplotSummaryAws(merge(data.aws.t2, aws.specs), title="Performance of AWS t2 Instance Types")
-ggsave("data_aws_t2.png", device="png", path="graphs/", width = 200, height = 180, units="mm")
+# ggsave("data_aws_t2.png", device="png", path="graphs/", width = 300, height = 150, units = "mm", bg = "transparent")
+ggsave("data_aws_t2.png", device="png", path="graphs/", width = 200, height = 180, units = "mm", bg = "transparent")
 ggplotSummaryAws(merge(data.aws.m4, aws.specs), title="Performance of AWS m4 Instance Types")
-ggsave("data_aws_m4.png", device="png", path="graphs/", width = 200, height = 180, units="mm")
+# ggsave("data_aws_m4.png", device="png", path="graphs/", width = 300, height = 150, units = "mm", bg = "transparent")
+ggsave("data_aws_m4.png", device="png", path="graphs/", width = 200, height = 180, units = "mm", bg = "transparent")
 ggplotSummaryAws(merge(data.aws.c4, aws.specs), title="Performance of AWS c4 Instance Types")
-ggsave("data_aws_c4.png", device="png", path="graphs/", width = 200, height = 180, units="mm")
+# ggsave("data_aws_c4.png", device="png", path="graphs/", width = 300, height = 150, units = "mm", bg = "transparent")
+ggsave("data_aws_c4.png", device="png", path="graphs/", width = 200, height = 180, units = "mm", bg = "transparent")
 
 data.aws
 
@@ -136,7 +142,8 @@ data.average.aws.merge = merge(data.average.aws, aws.specs) %>%
   select(provider, overall, cost)
 
 data.average.merged = rbind(data.average.azure.merge, data.average.aws.merge)
-
+data.average.merged
+data.average.azure.merge
 ## Graph
 
 ggplot(data.average.merged, aes(x=cost, y=overall, colour=provider)) +
@@ -155,8 +162,13 @@ ggplot(data.average.merged, aes(x=cost, y=overall, colour=provider)) +
         axis.title.x = element_text(margin = margin(t = 10, b = 10)),
         axis.title.y = element_text(margin = margin(l = 10, r = 10)),
         legend.text = element_text(size=12),
-        legend.title = element_text(size=14))
-ggsave("data_both.png", device="png", path="graphs/", width = 200, height = 180, units="mm")
+        legend.title = element_text(size=14),
+        plot.background = element_rect(fill = 'transparent', colour = 'transparent'),
+        legend.background = element_rect(fill = 'transparent', colour = 'transparent'),
+        panel.background = element_rect(fill = 'transparent'),
+        legend.key = element_rect(fill = 'transparent'))
+# ggsave("data_both.png", device="png", path="graphs/", width = 300, height = 150, units = "mm", bg = 'transparent')
+ggsave("data_both.png", device="png", path="graphs/", width = 200, height = 180, units = "mm", bg = 'transparent')
 
 
 #### Azure: Single Thread ####
@@ -171,8 +183,9 @@ data.average.azure.single.thread
 write.csv(format(data.average.azure.single.thread, digits=3, nsmall=2), file = "data/output/data_average_azure_single_thread.csv", quote = FALSE, row.names = FALSE)
 
 merge(data.azure.single.thread, azure.specs)
-ggplotSummaryAzure(merge(data.azure.single.thread, azure.specs), title="", yinterval = 20)
-ggsave("data_azure_single_thread.png", device="png", path="graphs/", width = 200, height = 180, units="mm")
+ggplotSummaryAzure(merge(data.azure.single.thread, azure.specs), yinterval = 20, title="Single-Threaded Performance of Azure 'Standard' Instance Types")
+# ggsave("data_azure_single_thread.png", device="png", path="graphs/", width = 200, height = 180, units = "mm", bg = 'transparent')
+ggsave("data_azure_single_thread.png", device="png", path="graphs/", width = 200, height = 180, units = "mm", bg = 'transparent')
 
 
 ### Write specification tables ###
@@ -183,10 +196,11 @@ spec.header = c("VM Type", "VM Size", "Cores", "Memory GB", "Cost $/hour")
 azure.specs.print = azure.specs %>%
   mutate(vm_size = factor(gsub("_"," ",vm_size), levels=gsub("_", " ",levels(vm_size))))
 colnames(azure.specs.print) = spec.header
-write.csv(format(azure.specs.print, digits=3, nsmall=2), file = "data/output/data_azure_specs.csv", quote = FALSE, row.names = FALSE)
+azure.specs.print
+write.csv(format(azure.specs.print, digits=3, nsmall=2), file = "data/ouput/data_azure_specs.csv", quote = FALSE, row.names = FALSE)
 
 ## aws ##
 
 aws.specs.print = aws.specs
 colnames(aws.specs.print) = spec.header
-write.csv(format(aws.specs.print, digits=3, nsmall=2), file = "data/output/data_aws_specs.csv", quote = FALSE, row.names = FALSE)
+write.csv(format(aws.specs.print, digits=3, nsmall=2), file = "data/ouput/data_aws_specs.csv", quote = FALSE, row.names = FALSE)

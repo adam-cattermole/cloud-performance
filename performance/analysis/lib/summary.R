@@ -41,11 +41,13 @@ ggplotSummaryCi = function(summary, measurevar="overall", xvalue="cost", groupva
   yscale = ceiling((summary[pos,measurevar]+summary[pos,"ci"])/yinterval)*yinterval
   xscale = ceiling(max(summary[[xvalue]]/xinterval))*xinterval
   # plot
+  step_x = max(c(round((xscale/0.4))*0.05,0.05))
+  step_y = round((yscale/10)/5)*5
   ggplot(summary, aes_string(x=xvalue,y=measurevar, colour="vm_size")) +
     geom_errorbar(aes(ymin=summary[[measurevar]]-ci, ymax=summary[[measurevar]]+ci), width=xscale/50, position=pd) +
     suppressMessages(geom_point(position=pd)) +
-    scale_x_continuous(breaks=seq(0,xscale,max(c(round((xscale/0.4))*0.05,0.05))), limits=c(0,xscale)) +
-    scale_y_continuous(breaks=seq(0,yscale,round((yscale/10)/5)*5),limits=c(0,yscale)) +
+    scale_x_continuous(breaks=seq(0, xscale, step_x), minor_breaks = seq(0, xscale, step_x/2), limits=c(0,xscale)) +
+    scale_y_continuous(breaks=seq(0, yscale, step_y), minor_breaks = seq(0, yscale, step_y/2), limits=c(0,yscale)) +
     theme_bw() +
     scale_colour_brewer(palette = "Set1") +
     labs(title=title,
@@ -58,7 +60,11 @@ ggplotSummaryCi = function(summary, measurevar="overall", xvalue="cost", groupva
           axis.title.x = element_text(margin = margin(t = 10, b = 10)),
           axis.title.y = element_text(margin = margin(l = 10, r = 10)),
           legend.text = element_text(size=12),
-          legend.title = element_text(size=14))
+          legend.title = element_text(size=14),
+          plot.background = element_rect(fill = 'transparent', colour = 'transparent'),
+          legend.background = element_rect(fill = 'transparent', colour = 'transparent'),
+          panel.background = element_rect(fill = 'transparent'),
+          legend.key = element_rect(fill = 'transparent'))
 }
 
 
