@@ -11,7 +11,7 @@
 \usepackage{hyperref}
 \usepackage{csvsimple}
 \usepackage{adjustbox}
-\usepackage[title,toc,titletoc,header]{appendix}
+% \usepackage[title,toc,titletoc,header]{appendix}
 
 \makeatletter
 \csvset{
@@ -118,9 +118,9 @@ There are several different criteria which are involved in the collection of per
 
 Microsoft's Azure platform was selected as the first candidate to collect results from. The provisioning of instances initially is relatively straightforward. This is done by several API calls to the Azure SDK. First, a hosted service must be created in the correct region, which then permits the creation of a new VM as the deployment for this service, whereby you are required to specify the name, image to be used, instance type, and other configuration options. Seeing as SPECjvm2008 was chosen as the benchmark suite to be used, it must first be installed along with a Java Runtime Environment (JRE) on our newly provisioned VM. There were multiple options for the installation, the first of which would be to download and install these components upon provisioning each virtual machine. However, this creates additional overhead for the initialisation of each instance, and so a custom VM image \cite{azurevmimage} was created for use where the required components were pre-installed. For ease-of-use, this image was based on the standard Ubuntu 14.04 image provided by Azure at the time of writing.
 
-To run SPECjvm2008, a command must be run from within the installation folder. The python~\texttt{paramiko} package was used to connect to the VM over a Secure Shell (SSH) connection, where the benchmark could then be executed from within the VM. To connect over SSH however, the VM must be setup correctly to accept an SSH key, and the VM must be accessible from the default SSH port (22). To ensure the benchmark runs until completion, a blocking call is made on the output stream from the execution, waiting for the command to exit or the channel to be closed. Once this returns the benchmark has completed, and the results file is copied across to the original machine using an SFTP session. The final step is to release the virtual machine, by deleting the hosted service and deployments, along with associated data disks.
+To run SPECjvm2008, a command must be run from within the installation folder. The python \texttt{paramiko} package was used to connect to the VM over a Secure Shell (SSH) connection, where the benchmark could then be executed from within the VM. To connect over SSH however, the VM must be setup correctly to accept an SSH key, and the VM must be accessible from the default SSH port (22). To ensure the benchmark runs until completion, a blocking call is made on the output stream from the execution, waiting for the command to exit or the channel to be closed. Once this returns the benchmark has completed, and the results file is copied across to the original machine using an SFTP session. The final step is to release the virtual machine, by deleting the hosted service and deployments, along with associated data disks.
 
-The process was very similar for Amazon's EC2 platform, however using the~\texttt{boto3} package instead to interact with the EC2 API. It was noticeable that this package required far fewer lines of code to complete simple tasks, such as creating a particular tier of VM from a predefined image in one function call. It should be noted however that both platforms and their associated packages have some setup that must be completed prior to accessing the services programmatically. This includes creating a service management certificate for Azure, and either creating files or running the configure command from AWS CLI for EC2.
+The process was very similar for Amazon's EC2 platform, however using the \texttt{boto3} package instead to interact with the EC2 API. It was noticeable that this package required far fewer lines of code to complete simple tasks, such as creating a particular tier of VM from a predefined image in one function call. It should be noted however that both platforms and their associated packages have some setup that must be completed prior to accessing the services programmatically. This includes creating a service management certificate for Azure, and either creating files or running the configure command from AWS CLI for EC2.
 
 % Sequential design figure
 % =====================
@@ -151,7 +151,7 @@ The initial implementation would iterate through the different instance sizes, p
 
 \subsection{Performance}\label{sec:eval:performance}
 
-The performance results were provisioned by methods explained within Section~\ref{sec:implementation}. Each VM instance type was tested over 5 different iterations, whereby a new VM was provisioned for each run, to give an indication of variability in performance between instances. Microsoft's Azure platform and Amazon EC2 were both chosen to provide some comparison between different cloud providers. The different instance types were chosen to cover a wide range of the offerings which may influence the scores received from the benchmark run. In general, this included several general purpose instance types, alongside compute-optimised VMs at a variety of pricing tiers. The term 'tier' is used throughout to describe the different instance offering levels for a particular series. The specifications of the different instances used are outlined in Appendix A, table \ref{tab:azure:specs} and \ref{tab:aws:specs}.
+The performance results were provisioned by methods explained within Section \ref{sec:implementation}. Each VM instance type was tested over 5 different iterations, whereby a new VM was provisioned for each run, to give an indication of variability in performance between instances. Microsoft's Azure platform and Amazon EC2 were both chosen to provide some comparison between different cloud providers. The different instance types were chosen to cover a wide range of the offerings which may influence the scores received from the benchmark run. In general, this included several general purpose instance types, alongside compute-optimised VMs at a variety of pricing tiers. The term 'tier' is used throughout to describe the different instance offering levels for a particular series. The specifications of the different instances used are outlined in Appendix A, table \ref{tab:azure:specs} and \ref{tab:aws:specs}.
 
 \subsubsection{Azure Results}\label{sec:eval:azureresults}
 
@@ -248,7 +248,7 @@ When comparing the performance of the D-series with the Dv2-series, the cost is 
 
 The second set of data (table \ref{tab:ec2}) is collected from Amazon's EC2, running the benchmark on several T2 general purpose instances, newer generation general purpose M4 instances, alongside some compute optimised C4 instances \cite{awsvmtype}. When looking at the results from T2 instances, an increase in performance can be seen from one tier to the next one, which is generally expected when the hardware specification of the VMs increases also. However, from a t2.micro to a t2.small, the number of cores remains the same while the memory increases. Although this is the case, the JRE was provided with the same amount of memory for both of these benchmark runs, and so the capacity increase should not have affected the results for the runs.
 
-The same approximately 50\% increase in performance occurs between the t2.medium and t2.large VMs where there is only 2-cores available (figure \ref{fig:aws:t2}). This increase in performance is most likely due to the nature of T2 instances as burstable performance instances \cite{awsvmtype}. Although the number of cores remains the same between these tiers, the number of credits increases so that the CPU can burst above the baseline more frequently. This ability to burst will have a direct effect on the benchmark results. The largest increase in performance however is when switching between the single core system of a t2.small and the 2-core t2.medium instance type, where the latter scores very nearly double of the former, whilst the cost/hour increases by exactly double.
+The same approximately 50\% increase in performance occurs between the\linebreak t2.medium and t2.large VMs where there is only 2-cores available (figure \ref{fig:aws:t2}). This increase in performance is most likely due to the nature of T2 instances as burstable performance instances \cite{awsvmtype}. Although the number of cores remains the same between these tiers, the number of credits increases so that the CPU can burst above the baseline more frequently. This ability to burst will have a direct effect on the benchmark results. The largest increase in performance however is when switching between the single core system of a t2.small and the 2-core t2.medium instance type, where the latter scores very nearly double of the former, whilst the cost/hour increases by exactly double.
 
 % % AWS Performance Table
 % % =====================
@@ -298,7 +298,7 @@ Amazon also has a compute optimised instance selection within the C4 series whic
 
 \subsubsection{Comparison of Azure and EC2}
 
-The results for similar specification VM instances across both cloud providers showed near same performance for some of the fixed instances (figure \ref{fig:bothchart}). An example of which is Standard\_D2 and m4.large, both 2-core instance types with 7GB and 8GB of memory respectively, that were within an average composite score of $60\pm3$, with the D2 taking the lead. Similar results are also seen between the Standard\_D3 and m4.xlarge, with Azure's D3 marginally outperforming again. Although this is the case, Azure's D-series does have a higher proportion increase in cost per hour than performance gained, when looking at the M4 equivalent of Amazon's EC2. The newer optimised compute Dv2-series also outperforms the EC2 equivalent, the C4 instance types, with 2-core D2\_v2 scoring a 38\% higher result than the equivalent c4.large, with only a 23\% increase to cost. Other D2v2 instances however have performance increases more proportionate to the cost/hour increase. One of the main benefits to Azure's higher tier offerings is that of a single core machine. Neither the M4, or C4 instance types provide a single core machine, whereas Azure has both the D-series Standard\_D1 and Dv2-series Standard\_D1\_v2. For any workloads that are only designed to run in a single thread, if it is preferred that these run on the newer compute optimised or general purpose EC2 instances, they should be batch loaded onto the system to make the most of available virtual cores.
+The results for similar specification VM instances across both of the cloud providers showed near same performance for some of the fixed instances (figure \ref{fig:bothchart}). An example of which is Standard\_D2 and m4.large, both 2-core instance types with 7GB and 8GB of memory respectively, that were within an average composite score of $60\pm3$, with the D2 taking the lead. Similar results are also seen between the Standard\_D3 and m4.xlarge, with Azure's D3 marginally outperforming again. Although this is the case, Azure's D-series does have a higher proportion increase in cost per hour than performance gained, when looking at the M4 equivalent of Amazon's EC2. The newer optimised compute Dv2-series also outperforms the EC2 equivalent, the C4 instance types, with 2-core D2\_v2 scoring a 38\% higher result than the equivalent c4.large, with only a 23\% increase to cost. Other D2v2 instances however have performance increases more proportionate to the cost/hour increase. One of the main benefits to Azure's higher tier offerings is that of a single core machine. Neither the M4, or C4 instance types provide a single core machine, whereas Azure has both the D-series Standard\_D1 and Dv2-series Standard\_D1\_v2. For any workloads that are only designed to run in a single thread, if it is preferred that these run on the newer compute optimised or general purpose EC2 instances, they should be batch loaded onto the system to make the most of available virtual cores.
 
 % Graph comparison of EC2 and Azure types
 % =====================
@@ -382,8 +382,8 @@ Throughout this research, the intent has been to create a benchmarking tool to c
 \bibliographystyle{entcs}
 \bibliography{IEEEabrv,research}
 % \bibliography{splncs03,research}
-
-\begin{appendices}
+\appendix
+% \begin{appendices}
   % \section
   % \renewcommand{\thesection}{\appendixname~\Alph{section}}
   \section{VM Instance Specifications}
@@ -408,7 +408,7 @@ Throughout this research, the intent has been to create a benchmarking tool to c
       \end{adjustbox}
   \end{table*}
   % % =====================
-\end{appendices}
+% \end{appendices}
 
 
 
