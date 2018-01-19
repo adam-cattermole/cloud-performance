@@ -11,12 +11,25 @@
 \usepackage{hyperref}
 \usepackage{csvsimple}
 \usepackage{adjustbox}
+\usepackage{array}
 % \usepackage[title,toc,titletoc,header]{appendix}
+
+\newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{R}[1]{>{\raggedleft\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+
+\newcommand{\lcollengthsmall}{0.03\linewidth}
+\newcommand{\lcollengthreg}{0.04\linewidth}
+\newcommand{\lcollengthlarge}{0.062\linewidth}
+\newcommand{\rcolfour}{0.049\linewidth}
+\newcommand{\rcolfive}{0.06\linewidth}
+\newcommand{\rcolsix}{0.071\linewidth}
 
 \makeatletter
 \csvset{
   autotabularcustom/.style={
     file=#1,
+    % after head=\csv@pretable\begin{tabular}{|L{\lcollength}|*{\csv@columncount}{R{\rcolfive}|}}\csv@tablehead,
     after head=\csv@pretable\begin{tabular}{|l|*{\csv@columncount}{r|}}\csv@tablehead,
     table head=\hline\csvlinetotablerow\\\hline,
     late after line=\\,
@@ -126,7 +139,7 @@ The process was very similar for Amazon's EC2 platform, however using the \textt
 % =====================
 \begin{figure}[ht]
   \centering
-  \includegraphics[width=0.8\linewidth]{impl_design.png}
+  \includegraphics[width=\linewidth]{impl_design.png}
   \caption{The flow of the result collection process}
   \label{fig:impldesign}
 \end{figure}
@@ -167,8 +180,18 @@ When moving towards the A3 and A4 variants there is less of an increase in perfo
   \caption{Performance result averages for Azure A-series across 5 iterations per instance type}
   \label{tab:azureb}
   \begin{adjustbox}{width=\linewidth,center}
-    \csvautotabularcustom[respect all]{\data/data_average_azure_basic.csv}
-  \end{adjustbox}
+    \small
+    % \csvautotabularcustom[respect all]{\data/data_average_azure_basic.csv}
+  \begin{tabular}{|L{\lcollengthsmall}|R{\rcolfive}|R{\rcolfive}|R{\rcolfive}|R{\rcolfive}|R{\rcolfive}|R{\rcolfive}|R{\rcolfive}|R{\rcolfive}|R{\rcolfive}|R{\rcolfive}|R{\rcolfive}|R{\rcolfive}|}
+  % \begin{tabular}{|l|r|r|r|r|r|r|r|r|r|r|r|r|}
+    \hline
+    VM Size & compiler & compress & crypto & derby & mpegaudio & scimark large & scimark small & serial & startup & sunflow & xml & Overall \\ \hline
+    a1 & 21.31 & 13.04 & 15.14 & 25.91 & 9.90 & 5.78 & 18.17 & 11.50 & 5.47 & 5.63 & 37.68 & 12.80 \\
+    a2 & 63.94 & 28.92 & 31.54 & 50.68 & 20.54 & 10.48 & 39.07 & 24.50 & 7.44 & 11.51 & 78.68 & 26.24 \\
+    a3 & 124.56 & 58.81 & 64.79 & 89.29 & 40.65 & 17.63 & 76.65 & 47.19 & 8.13 & 22.55 & 153.26 & 47.89 \\
+    a4 & 221.47 & 120.44 & 129.10 & 160.09 & 80.66 & 30.99 & 157.95 & 87.67 & 8.04 & 43.63 & 279.23 & 85.66 \\ \hline
+\end{tabular}
+\end{adjustbox}
 \end{table*}
 % % =====================
 
@@ -192,7 +215,20 @@ Performance results were also collected for the high memory variants of the D-se
   \caption{Performance result averages for Azure D-series across 5 iterations per instance type}
   \label{tab:azured}
   \begin{adjustbox}{width=\linewidth,center}
-    \csvautotabularcustom[respect all]{\data/data_average_azure_standard.csv}
+    \small
+    % \csvautotabularcustom[respect all]{\data/data_average_azure_standard.csv}
+    \begin{tabular}{|L{\lcollengthreg}|R{\rcolfive}|R{\rcolfive}|R{\rcolfive}|R{\rcolfive}|R{\rcolfive}|R{\rcolfive}|R{\rcolfive}|R{\rcolfive}|R{\rcolfive}|R{\rcolfive}|R{\rcolfive}|R{\rcolfive}|}
+      \hline
+VM Size & compiler & compress & crypto & derby & mpegaudio & scimark large & scimark small & serial & startup & sunflow & xml & Overall \\ \hline
+d1 & 57.87 & 34.34 & 38.50 & 61.06 & 25.26 & 15.93 & 48.00 & 29.45 & 14.11 & 14.61 & 95.51 & 33.08 \\
+d2 & 155.67 & 68.32 & 77.09 & 116.67 & 50.42 & 27.99 & 97.38 & 58.66 & 18.05 & 28.09 & 186.13 & 63.89 \\
+d3 & 306.36 & 135.30 & 150.47 & 170.25 & 97.57 & 45.50 & 199.49 & 109.30 & 19.53 & 57.11 & 353.39 & 112.94 \\
+d4 & 549.86 & 271.01 & 290.43 & 414.07 & 188.92 & 71.54 & 397.99 & 209.18 & 19.12 & 112.64 & 679.45 & 206.53 \\
+d11 & 155.80 & 66.46 & 76.45 & 112.30 & 48.60 & 28.23 & 98.53 & 56.71 & 17.05 & 28.02 & 180.59 & 62.64 \\
+d12 & 311.39 & 136.41 & 152.10 & 206.59 & 97.93 & 46.41 & 198.56 & 112.14 & 19.55 & 56.97 & 356.60 & 116.38 \\
+d13 & 546.31 & 257.19 & 300.84 & 348.70 & 195.95 & 68.33 & 381.48 & 207.22 & 19.81 & 115.25 & 703.06 & 202.97 \\ \hline
+    \end{tabular}
+
   \end{adjustbox}
 \end{table*}
 % % =====================
@@ -217,7 +253,19 @@ When comparing the performance of the D-series with the Dv2-series, the cost is 
   \caption{Performance result averages for Azure Dv2-series across 5 iterations per instance type}
   \label{tab:azuredv2}
   \begin{adjustbox}{width=\linewidth,center}
-    \csvautotabularcustom[respect all]{\data/data_average_azure_standard_v2.csv}
+    \small
+    % \csvautotabularcustom[respect all]{\data/data_average_azure_standard_v2.csv}
+    \begin{tabular}{|L{\lcollengthlarge}|R{\rcolfive}|R{\rcolfive}|R{\rcolfive}|R{\rcolfive}|R{\rcolfive}|R{\rcolfive}|R{\rcolfive}|R{\rcolfive}|R{\rcolfive}|R{\rcolfive}|R{\rcolsix}|R{\rcolfive}|}
+      \hline
+VM Size & compiler & compress & crypto & derby & mpegaudio & scimark large & scimark small & serial & startup & sunflow & xml & Overall \\ \hline
+d1 v2 & 82.59 & 49.06 & 55.91 & 85.43 & 36.51 & 19.84 & 69.47 & 45.94 & 19.84 & 21.83 & 151.07 & 47.59 \\
+d2 v2 & 230.55 & 98.84 & 113.81 & 160.84 & 72.52 & 32.95 & 139.14 & 90.96 & 25.26 & 41.50 & 284.28 & 91.45 \\
+d3 v2 & 446.80 & 183.52 & 216.06 & 242.91 & 135.68 & 47.22 & 268.74 & 164.49 & 27.90 & 77.89 & 535.10 & 156.33 \\
+d4 v2 & 846.63 & 370.90 & 422.39 & 615.61 & 267.04 & 64.25 & 522.43 & 317.23 & 27.72 & 157.77 & 1048.73 & 286.37 \\
+d11 v2 & 233.13 & 96.07 & 112.59 & 167.98 & 70.65 & 35.96 & 138.40 & 86.64 & 25.30 & 39.61 & 278.92 & 91.14 \\
+d12 v2 & 444.79 & 183.70 & 215.07 & 281.57 & 136.92 & 50.54 & 267.60 & 164.73 & 27.94 & 78.24 & 532.88 & 159.94 \\
+d13 v2 & 575.80 & 367.98 & 412.32 & 588.54 & 266.92 & 62.29 & 509.81 & 311.86 & 27.92 & 156.94 & 1054.62 & 272.91 \\ \hline
+    \end{tabular}
   \end{adjustbox}
 \end{table*}
 % % =====================
@@ -256,7 +304,22 @@ The same approximately 50\% increase in performance occurs between the\linebreak
     \caption{Performance result averages for Amazon EC2 across 5 iterations per instance type}
     \label{tab:ec2}
   \begin{adjustbox}{width=\linewidth,center}
-    \csvautotabularcustom[respect all]{\data/data_average_aws.csv}
+    \small
+    % \csvautotabularcustom[respect all]{\data/data_average_aws.csv}
+    \begin{tabular}{|L{\lcollengthlarge}|R{\rcolfive}|R{\rcolfive}|R{\rcolfive}|R{\rcolfive}|R{\rcolfive}|R{\rcolfive}|R{\rcolfive}|R{\rcolfive}|R{\rcolfive}|R{\rcolfive}|R{\rcolfive}|R{\rcolfive}|}
+      \hline
+VM Type & compiler & compress & crypto & derby & mpegaudio & scimark large & scimark small & serial & startup & sunflow & xml & Overall \\ \hline
+c4 large & 156.55 & 68.66 & 70.71 & 136.17 & 49.26 & 28.46 & 106.12 & 55.38 & 25.41 & 28.05 & 179.60 & 66.31 \\
+c4 xlarge & 311.31 & 136.74 & 143.20 & 261.17 & 99.63 & 54.34 & 211.10 & 109.67 & 30.65 & 55.99 & 357.84 & 125.58 \\
+c4 2xlarge & 556.12 & 276.84 & 287.60 & 504.95 & 198.13 & 82.04 & 410.20 & 211.22 & 32.95 & 112.61 & 717.18 & 227.19 \\
+m4 large & 138.10 & 59.97 & 59.49 & 117.59 & 41.31 & 26.21 & 89.82 & 47.44 & 21.91 & 23.80 & 153.39 & 57.18 \\
+m4 xlarge & 270.11 & 118.08 & 119.11 & 224.29 & 83.69 & 48.03 & 182.14 & 92.81 & 26.18 & 47.56 & 303.43 & 107.35 \\
+m4 2xlarge & 521.63 & 238.94 & 237.17 & 437.86 & 167.46 & 75.07 & 354.09 & 180.74 & 27.93 & 94.90 & 608.58 & 196.38 \\
+t2 micro & 81.40 & 47.04 & 39.14 & 15.49 & 3.59 & 2.18 & 6.92 & 5.27 & 19.78 & 2.11 & 13.47 & 11.08 \\
+t2 small & 74.45 & 47.49 & 48.64 & 37.44 & 6.99 & 4.23 & 13.84 & 8.49 & 19.20 & 4.12 & 25.04 & 17.38 \\
+t2 med & 209.83 & 93.90 & 104.25 & 87.84 & 13.34 & 8.19 & 27.74 & 15.64 & 25.48 & 8.25 & 49.00 & 34.67 \\
+t2 large & 228.43 & 93.14 & 110.68 & 179.16 & 39.32 & 12.29 & 41.03 & 27.56 & 26.30 & 12.10 & 85.51 & 51.13 \\ \hline
+    \end{tabular}
   \end{adjustbox}
 \end{table*}
 % % =======================
@@ -322,7 +385,21 @@ Some workloads may be single threaded, and therefore unable to benefit from the 
   \caption{Single-threaded performance result averages from Azure across 5 iterations per instance type}
   \label{tab:singleazure}
     \begin{adjustbox}{width=\linewidth,center}
-      \csvautotabularcustom[respect all]{\data/data_average_azure_single_thread.csv}
+      \small
+      \begin{tabular}{|L{0.052\linewidth}|R{\rcolfive}|R{\rcolfour}|R{\rcolfour}|R{\rcolfour}|R{\rcolfour}|R{\rcolfour}|R{\rcolfour}|R{\rcolfour}|R{\rcolfour}|R{\rcolfour}|R{\rcolfive}|R{\rcolfour}|}
+        \hline
+VM Size & compiler & compress & crypto & derby & mpegaudio & scimark large & scimark small & serial & startup & sunflow & xml & Overall \\ \hline
+d1 & 55.42 & 34.22 & 36.95 & 63.32 & 24.63 & 15.64 & 48.15 & 27.99 & 13.77 & 14.20 & 89.71 & 32.32 \\
+d2 & 83.39 & 35.07 & 39.40 & 66.29 & 25.82 & 16.26 & 49.25 & 31.12 & 18.16 & 28.55 & 97.97 & 38.14 \\
+d3 & 81.37 & 35.16 & 39.03 & 62.24 & 25.15 & 16.84 & 51.88 & 28.48 & 20.37 & 52.81 & 93.94 & 40.15 \\
+d4 & 82.20 & 34.07 & 39.09 & 66.53 & 25.01 & 16.35 & 49.24 & 29.72 & 20.09 & 52.65 & 95.64 & 40.17 \\
+d1 v2 & 80.39 & 47.99 & 55.52 & 96.54 & 36.29 & 20.34 & 67.47 & 43.10 & 20.69 & 20.91 & 140.59 & 47.33 \\
+d2 v2 & 117.76 & 48.91 & 55.32 & 83.95 & 36.01 & 22.06 & 67.59 & 43.56 & 24.55 & 38.64 & 137.52 & 52.36 \\
+d3 v2 & 120.17 & 48.86 & 57.31 & 92.25 & 36.07 & 21.87 & 70.00 & 44.08 & 27.23 & 70.43 & 144.38 & 57.05 \\
+d4 v2 & 117.31 & 47.52 & 57.11 & 92.17 & 36.24 & 22.60 & 69.30 & 44.15 & 27.29 & 71.10 & 141.53 & 56.87 \\ \hline
+
+      \end{tabular}
+      % \csvautotabularcustom[respect all]{\data/data_average_azure_single_thread.csv}
     \end{adjustbox}
 \end{table*}
 % % =====================
@@ -356,8 +433,24 @@ Another avenue of extended testing took the form of measuring performance over t
 \begin{table*}[!h]
   \caption{Compression test ran every ten minutes on 10 different instances}
   \label{tab:timeazure}
-    \begin{adjustbox}{width=\linewidth,center}
-      \csvautotabularcustom[respect all]{\data/time_results.csv}
+  \begin{adjustbox}{width=\linewidth,center}
+    \small
+      % \csvautotabul\end{adjustbox}arcustom[respect all]{\data/time_results.csv}
+      \begin{tabular}{|R{\rcolfive}|R{\rcolfive}|R{\rcolfive}|R{\rcolfive}|R{\rcolfive}|R{\rcolfive}|R{\rcolfive}|R{\rcolfive}|R{\rcolfive}|R{\rcolfive}|R{\rcolfive}|R{\rcolfive}|}
+        \hline
+Instance & Iteration 1 & Iteration 2 & Iteration 3 & Iteration 4 & Iteration 5 & Iteration 6 & Average & max decrease & max increase & from average \\ \hline
+1 & 51.19 & 51.86 & 51.64 & 50.42 & 51.95 & 51.62 & 51.45 & -0.77 & 0.76 & 0.26 \\
+2 & 51.97 & 50.48 & 51.72 & 52.15 & 51.01 & 51.39 & 51.45 & -1.49 & 0.18 & 0.52 \\
+3 & 49.4 & 50.24 & 49.88 & 50.03 & 49.75 & 50.27 & 49.93 & 0 & 0.87 & 0.53 \\
+4 & 47.8 & 48.37 & 47.05 & 47.58 & 47.43 & 48.81 & 47.84 & -0.75 & 1.01 & 0.04 \\
+5 & 48.77 & 51.37 & 50.29 & 51.08 & 50.35 & 50.35 & 50.37 & 0 & 2.6 & 1.6 \\
+6 & 49.7 & 48.93 & 48.85 & 49.85 & 48.48 & 48.81 & 49.1 & -1.22 & 0.15 & 0.6 \\
+7 & 51.71 & 51.27 & 51.56 & 51.23 & 50.42 & 50.87 & 51.18 & -1.29 & 0 & 0.53 \\
+8 & 49.64 & 50.33 & 52.05 & 50.65 & 51.67 & 50.58 & 50.82 & 0 & 2.41 & 1.18 \\
+9 & 47.68 & 49.16 & 49.55 & 49.15 & 49.75 & 48.94 & 49.04 & 0 & 2.07 & 1.36 \\
+10 & 50.26 & 49.97 & 48.74 & 49.07 & 49.68 & 49.2 & 49.49 & -1.52 & 0 & 0.77 \\
+ &  &  &  &  &  &  & 50.07 & -0.7 & 1.01 & 0.74 \\ \hline
+      \end{tabular}
     \end{adjustbox}
 \end{table*}
 % % =====================
@@ -392,8 +485,31 @@ Throughout this research, the intent has been to create a benchmarking tool to c
   \begin{table*}[!h]
     \caption{Specifications of Azure instance types}
     \label{tab:azure:specs}
-      \begin{adjustbox}{width=0.7\linewidth,center}
-        \csvautotabularcustom[respect all]{\data/data_azure_specs.csv}
+      \begin{adjustbox}{width=0.6\linewidth,center}
+      \small
+        % \csvautotabularcustom[respect all]{\data/data_azure_specs.csv}
+        \begin{tabular}{|L{0.1\linewidth}|L{\lcollengthlarge}|R{\lcollengthlarge}|R{0.08\linewidth}|R{0.08\linewidth}|}
+          \hline
+VM Type & VM Size & Cores & Memory GB & Cost \$/hour \\ \hline
+basic & a1 & 1.00 & 1.75 & 0.044 \\
+basic & a2 & 2.00 & 3.50 & 0.088 \\
+basic & a3 & 4.00 & 7.00 & 0.176 \\
+basic & a4 & 8.00 & 14.00 & 0.352 \\
+standard & d1 & 1.00 & 3.50 & 0.077 \\
+standard & d2 & 2.00 & 7.00 & 0.154 \\
+standard & d3 & 4.00 & 14.00 & 0.308 \\
+standard & d4 & 8.00 & 28.00 & 0.616 \\
+standard & d11 & 2.00 & 14.00 & 0.195 \\
+standard & d12 & 4.00 & 28.00 & 0.390 \\
+standard & d13 & 8.00 & 56.00 & 0.780 \\
+standard & d1 v2 & 1.00 & 3.50 & 0.073 \\
+standard & d2 v2 & 2.00 & 7.00 & 0.146 \\
+standard & d3 v2 & 4.00 & 14.00 & 0.293 \\
+standard & d4 v2 & 8.00 & 28.00 & 0.585 \\
+standard & d11 v2 & 2.00 & 14.00 & 0.185 \\
+standard & d12 v2 & 4.00 & 28.00 & 0.371 \\
+standard & d13 v2 & 8.00 & 56.00 & 0.741 \\ \hline
+        \end{tabular}
       \end{adjustbox}
   \end{table*}
   % % =====================
@@ -403,8 +519,23 @@ Throughout this research, the intent has been to create a benchmarking tool to c
   \begin{table*}[!h]
     \caption{Specifications of EC2 instance types}
     \label{tab:aws:specs}
-      \begin{adjustbox}{width=0.7\linewidth,center}
-        \csvautotabularcustom[respect all]{\data/data_aws_specs.csv}
+      \begin{adjustbox}{width=0.6\linewidth,center}
+        \small
+        % \csvautotabularcustom[respect all]{\data/data_aws_specs.csv}
+        \begin{tabular}{|L{0.1\linewidth}|L{0.08\linewidth}|R{\lcollengthlarge}|R{0.08\linewidth}|R{0.08\linewidth}|}
+          \hline
+VM Type & VM Size & Cores & Memory GB & Cost \$/hour \\ \hline
+t2 & micro & 1.00 & 1.00 & 0.014 \\
+t2 & small & 1.00 & 2.00 & 0.028 \\
+t2 & med & 2.00 & 4.00 & 0.056 \\
+t2 & large & 2.00 & 8.00 & 0.112 \\
+m4 & large & 2.00 & 8.00 & 0.132 \\
+m4 & xlarge & 4.00 & 16.00 & 0.264 \\
+m4 & 2xlarge & 8.00 & 32.00 & 0.528 \\
+c4 & large & 2.00 & 3.75 & 0.119 \\
+c4 & xlarge & 4.00 & 7.50 & 0.238 \\
+c4 & 2xlarge & 8.00 & 15.00 & 0.477 \\ \hline
+        \end{tabular}
       \end{adjustbox}
   \end{table*}
   % % =====================

@@ -1,4 +1,4 @@
-VM Size,compiler,compress,crypto,derby,mpegaudio,scimark.large,scimark.small,serial,startup,sunflow,xml,Overall
+VM Size,compiler,compress,crypto,derby,mpegaudio,scimark large,scimark small,serial,startup,sunflow,xml,Overall
 d1, 57.87, 34.34, 38.50, 61.06, 25.26,15.93, 48.00, 29.45,14.11, 14.61, 95.51, 33.08
 d2,155.67, 68.32, 77.09,116.67, 50.42,27.99, 97.38, 58.66,18.05, 28.09,186.13, 63.89
 d3,306.36,135.30,150.47,170.25, 97.57,45.50,199.49,109.30,19.53, 57.11,353.39,112.94

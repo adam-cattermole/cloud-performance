@@ -1,4 +1,4 @@
-VM Type,VM Size,compiler,compress,crypto,derby,mpegaudio,scimark.large,scimark.small,serial,startup,sunflow,xml,Overall
+VM Type,VM Size,compiler,compress,crypto,derby,mpegaudio,scimark large,scimark small,serial,startup,sunflow,xml,Overall
 c4,large,156.55, 68.66, 70.71,136.17, 49.26,28.46,106.12, 55.38,25.41, 28.05,179.60, 66.31
 c4,xlarge,311.31,136.74,143.20,261.17, 99.63,54.34,211.10,109.67,30.65, 55.99,357.84,125.58
 c4,2xlarge,556.12,276.84,287.60,504.95,198.13,82.04,410.20,211.22,32.95,112.61,717.18,227.19
